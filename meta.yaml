@@ -33,4 +33,4 @@ requirements:
 
 about:
   home: https://github.com/kitsune-ONE-team/panda3d-kphys
-  license: BSD
+  license: MIT

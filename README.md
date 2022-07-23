@@ -14,9 +14,15 @@ Features
 Building requirements
 ---------------------
 
-* cmake
-* bullet
-* panda3d (full package with headers, not pip package)
+* CMake
+* [Bullet Physics](https://pybullet.org/) (full package with headers)
+* [Panda3D](https://www.panda3d.org/) (full package with headers, not pip package)
+
+
+Running requirements
+--------------------
+
+* [panda3d-gltf](https://github.com/Moguri/panda3d-gltf) for actor loader
 
 
 Building python package
