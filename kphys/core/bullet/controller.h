@@ -4,7 +4,6 @@
 
 #ifdef CPPPARSER  // interrogate
 #include "btBulletDynamicsCommon.h"  // panda3d parser-inc
-#include "kphys/core/interrogate.h"
 #else  // normal compiler
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #endif

@@ -22,7 +22,7 @@ Building requirements
 Running requirements
 --------------------
 
-* [panda3d-gltf](https://github.com/Moguri/panda3d-gltf) for actor loader
+* [panda3d-gltf](https://github.com/Moguri/panda3d-gltf) (for actor loader)
 
 
 Building python package

@@ -3,7 +3,6 @@
 
 #ifdef CPPPARSER  // interrogate
 #include "btBulletDynamicsCommon.h"  // panda3d parser-inc
-#include "kphys/core/interrogate.h"
 #else  // normal compiler
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
 #endif
