@@ -46,7 +46,6 @@ public:
         return _type_handle;
     }
     static void init_type() {
-#ifdef IK_VERSION_1_1
         if (ik.init() == IK_OK) {
             if (ik.log.init() == IK_OK) {
 #ifdef IK_DEBUG
@@ -60,7 +59,6 @@ public:
         } else {
             // TODO: assert
         }
-#endif
 
         PandaNode::init_type();
         register_type(_type_handle, "ArmatureNode", PandaNode::get_class_type());
