@@ -1,0 +1,36 @@
+package:
+  name: panda3d-kphys
+  version: "0.3.0"
+
+source:
+  path: .
+
+build:
+  number: 0
+  string: 1658580684
+
+  missing_dso_whitelist:
+    - $RPATH/libc.so.6 # [unix]
+    - $RPATH/libm.so.6 # [unix]
+    - C:\Windows\System32\MSVCP140.dll # [win]
+    - C:\Windows\System32\VCRUNTIME140.dll # [win]
+    - C:\Windows\System32\VCRUNTIME140_1.dll # [win]
+
+requirements:
+  build:
+    - bullet ==3.17
+    - cmake
+    - conda ==4.13.0
+    - libgcc-ng # [unix]
+    - libstdcxx-ng # [unix]
+    - panda3d
+    - python ==3.10.0
+  run:
+    - libgcc-ng # [unix]
+    - libstdcxx-ng # [unix]
+    - panda3d
+    - python >=3.10.0,<3.11.0
+
+about:
+  home: https://github.com/kitsune-ONE-team/panda3d-kphys
+  license: BSD
