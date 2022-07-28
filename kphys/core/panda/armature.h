@@ -22,6 +22,7 @@ PUBLISHED:
     void rebuild_bind_pose();
     void rebuild_ik();
     void update_ik();
+    void update_ik(unsigned int priority);
     void update_shader_inputs();
 
 private:

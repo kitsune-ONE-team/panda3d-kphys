@@ -59,11 +59,14 @@ void ArmatureNode::rebuild_ik() {
     children_rebuild_ik(armature, _ik_solver, 0);
 }
 
+/**
+ * Update IK for the all effectors.
+ */
 void ArmatureNode::update_ik() {
-    unsigned int priority = 0, max_priority = 0;
     NodePath armature = NodePath::any_path(this);
-    NodePathCollection nps = armature.find_all_matches("**/+EffectorNode");
 
+    unsigned int priority = 0, max_priority = 0;
+    NodePathCollection nps = armature.find_all_matches("**/+EffectorNode");
     for (int i = 0; i < nps.get_num_paths(); i++) {
         NodePath np = nps.get_path(i);
         priority = ((EffectorNode*) np.node())->get_priority();
@@ -71,17 +74,26 @@ void ArmatureNode::update_ik() {
             max_priority = priority;
     }
 
-    for (int priority = 0; priority <= max_priority; priority++) {
-        for (int i = 0; i < nps.get_num_paths(); i++) {
-            NodePath np = nps.get_path(i);
-            if (((EffectorNode*) np.node())->get_priority() == priority)
-                ((EffectorNode*) np.node())->set_weight(1);
-            else
-                ((EffectorNode*) np.node())->set_weight(0);
-        }
+    for (int priority = 0; priority <= max_priority; priority++)
+        update_ik(priority);
+}
 
-        for (int i = 0; i < 10; i++) {
+/**
+ * Update IK for the effectors with specified priority.
+ */
+void ArmatureNode::update_ik(unsigned int priority) {
+    NodePath armature = NodePath::any_path(this);
 
+    NodePathCollection nps = armature.find_all_matches("**/+EffectorNode");
+    for (int i = 0; i < nps.get_num_paths(); i++) {
+        NodePath np = nps.get_path(i);
+        if (((EffectorNode*) np.node())->get_priority() == priority)
+            ((EffectorNode*) np.node())->set_weight(1);
+        else
+            ((EffectorNode*) np.node())->set_weight(0);
+    }
+
+    for (int i = 0; i < 10; i++) {
         // write all bones
         sync_p2ik_recursive();
 
@@ -90,8 +102,6 @@ void ArmatureNode::update_ik() {
 
         // read bones from active chains
         sync_ik2p_chains();
-
-        }
     }
 }
 

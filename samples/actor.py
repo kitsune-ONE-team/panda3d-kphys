@@ -22,7 +22,6 @@ class ActorSample(ShowBase):
 
         self.cam.set_y(-4)
         self.cam.set_z(0.7)
-        # self.cam.set_h(180)
 
         filepath = os.path.join(os.path.dirname(__file__), 'yuki', 'scene.gltf')
         scene = load_actor(filepath)
