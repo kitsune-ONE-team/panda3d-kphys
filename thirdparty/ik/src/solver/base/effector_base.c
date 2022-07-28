@@ -39,7 +39,7 @@ ik_effector_base_attach(struct ik_effector_t* effector, struct ik_node_t* node)
     if (node->effector != NULL)
     {
         IKAPI.log.message(
-            "Warning! You are trying to attach an effector to a node that "
+            "wWarning! You are trying to attach an effector to a node that "
             "already has an effector attached to it. The new effector will not "
             "be attached!"
         );

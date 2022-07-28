@@ -214,7 +214,7 @@ ik_node_base_dump_to_dot(struct ik_node_t* node, const char* file_name)
     FILE* fp = fopen(file_name, "w");
     if (fp == NULL)
     {
-        IKAPI.log.message("Failed to open file %s", file_name);
+        IKAPI.log.message("eFailed to open file %s", file_name);
         return;
     }
 

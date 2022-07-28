@@ -69,7 +69,7 @@ ik_constraint_base_set_type(struct ik_constraint_t* constraint, enum ik_constrai
             break;
 
         case IK_CUSTOM:
-            IKAPI.log.message("Error: use constraint.set_custom() for type IK_CONSTRAINT_CUSTOM. Constraint will have no effect.");
+            IKAPI.log.message("eError: use constraint.set_custom() for type IK_CONSTRAINT_CUSTOM. Constraint will have no effect.");
             return IK_WRONG_FUNCTION_FOR_CUSTOM_CONSTRAINT;
     }
 
@@ -102,7 +102,7 @@ ik_constraint_base_attach(struct ik_constraint_t* constraint, struct ik_node_t* 
     if (node->constraint != NULL)
     {
         IKAPI.log.message(
-            "Warning! You are trying to attach a constraint to a node that "
+            "wWarning! You are trying to attach a constraint to a node that "
             "already has a constraint attached to it. The new constraint will "
             "not be attached!"
         );
@@ -125,7 +125,7 @@ ik_constraint_base_create(enum ik_constraint_type_e constraint_type)
     struct ik_constraint_t* constraint = MALLOC(sizeof *constraint);
     if (constraint == NULL)
     {
-        IKAPI.log.message("Failed to allocate constraint: Out of memory");
+        IKAPI.log.message("eFailed to allocate constraint: Out of memory");
         return NULL;
     }
 
