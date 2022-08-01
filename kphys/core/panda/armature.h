@@ -17,7 +17,8 @@ union LMatrix4Array;
 
 class EXPORT_CLASS ArmatureNode: public PandaNode {
 PUBLISHED:
-    explicit ArmatureNode(const char* name="armature");
+    ArmatureNode(const char* name="armature");
+    ~ArmatureNode();
     void reset();
     void rebuild_bind_pose();
     void rebuild_ik();
@@ -32,14 +33,14 @@ private:
     LMatrix4Array _bone_init_inv;
     // current world-space matrices
     LMatrix4Array _bone_transform;
-    Texture _bone_transform_tex;
+    Texture* _bone_transform_tex;
     struct ik_solver_t* _ik_solver;
     static TypeHandle _type_handle;
 
     void _update_matrices(NodePath np, LMatrix4 parent_mat, int is_current);
 
 public:
-    void solve_ik();
+    void solve_ik(unsigned int priority);
     void sync_p2ik_recursive();
     void sync_ik2p_chains();
 

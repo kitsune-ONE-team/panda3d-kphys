@@ -13,9 +13,18 @@ TypeHandle ArmatureNode::_type_handle;
 ArmatureNode::ArmatureNode(const char* name):
         PandaNode(name),
         _ik_solver(NULL) {
-    _bone_transform_tex.setup_buffer_texture(
+    _bone_transform_tex = new Texture();
+    _bone_transform_tex->setup_buffer_texture(
         RGBA_MAT4_SIZE * MAX_BONES, Texture::T_float,
         Texture::F_rgba32, GeomEnums::UH_static);
+}
+
+ArmatureNode::~ArmatureNode() {
+    if (_ik_solver != NULL)
+        ik.solver.destroy(_ik_solver);
+
+    _bone_transform_tex->release_all();
+    delete _bone_transform_tex;
 }
 
 void ArmatureNode::reset() {
@@ -46,9 +55,8 @@ void ArmatureNode::rebuild_bind_pose() {
 }
 
 void ArmatureNode::rebuild_ik() {
-    if (_ik_solver != NULL) {
+    if (_ik_solver != NULL)
         ik.solver.destroy(_ik_solver);
-    }
     _ik_solver = ik.solver.create(IK_FABRIK);
     _ik_solver->flags &= ~IK_ENABLE_CONSTRAINTS;
     _ik_solver->flags &= ~IK_ENABLE_TARGET_ROTATIONS;
@@ -82,36 +90,23 @@ void ArmatureNode::update_ik() {
  * Update IK for the effectors with specified priority.
  */
 void ArmatureNode::update_ik(unsigned int priority) {
-    NodePath armature = NodePath::any_path(this);
-
-    NodePathCollection nps = armature.find_all_matches("**/+EffectorNode");
-    for (int i = 0; i < nps.get_num_paths(); i++) {
-        NodePath np = nps.get_path(i);
-        if (((EffectorNode*) np.node())->get_priority() == priority)
-            ((EffectorNode*) np.node())->set_weight(1);
-        else
-            ((EffectorNode*) np.node())->set_weight(0);
-    }
-
     for (int i = 0; i < 10; i++) {
-        // write all bones
-        sync_p2ik_recursive();
-
-        // solve IK problem
-        solve_ik();
-
-        // read bones from active chains
-        sync_ik2p_chains();
+        sync_p2ik_recursive();  // write all bones
+        solve_ik(priority);  // solve IK problem
+        sync_ik2p_chains();  // read bones from active chains
     }
 }
 
+/**
+ * Update shader inputs with world space bone matrices.
+ */
 void ArmatureNode::update_shader_inputs() {
     NodePath armature = NodePath::any_path(this);
     _update_matrices(armature, LMatrix4::ident_mat(), 1);
 
-    PTA_uchar data = _bone_transform_tex.modify_ram_image();
+    PTA_uchar data = _bone_transform_tex->modify_ram_image();
     memcpy(data.p(), _bone_transform.data, sizeof(_bone_transform.data));
-    armature.set_shader_input("bone_transform_tex", &_bone_transform_tex);
+    armature.set_shader_input("bone_transform_tex", _bone_transform_tex);
 }
 
 /**
@@ -137,16 +132,15 @@ void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, int is_cur
 
     for (int i = 0; i < np.get_num_children(); i++) {
         NodePath child_np = np.get_child(i);
-        if (is_bone(child_np)) {
+        if (is_bone(child_np))
             _update_matrices(child_np, mat, is_current);
-        }
     }
 }
 
 /**
  * Solve Inverse Kinematics problem.
  */
-void ArmatureNode::solve_ik() {
+void ArmatureNode::solve_ik(unsigned int priority) {
     NodePath armature = NodePath::any_path(this);
     NodePath root_bone = NodePath::not_found();
     for (int i = 0; i < armature.get_num_children(); i++) {
@@ -157,8 +151,16 @@ void ArmatureNode::solve_ik() {
         }
     }
 
-    if (!root_bone) {
+    if (!root_bone)
         return;
+
+    NodePathCollection nps = armature.find_all_matches("**/+EffectorNode");
+    for (int i = 0; i < nps.get_num_paths(); i++) {
+        NodePath np = nps.get_path(i);
+        if (((EffectorNode*) np.node())->get_priority() == priority)
+            ((EffectorNode*) np.node())->set_weight(1);
+        else
+            ((EffectorNode*) np.node())->set_weight(0);
     }
 
     ik.solver.set_tree(_ik_solver, ((BoneNode*) root_bone.node())->get_ik_node());
