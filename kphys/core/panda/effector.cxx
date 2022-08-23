@@ -1,8 +1,10 @@
+#include <math.h>
 #include <stdio.h>
 
 #include "nodePath.h"
 
 #include "kphys/core/panda/bone.h"
+#include "kphys/core/panda/ccdik.h"
 #include "kphys/core/panda/converters.h"
 #include "kphys/core/panda/effector.h"
 #include "kphys/core/panda/ik.h"
@@ -35,17 +37,27 @@ unsigned int EffectorNode::get_priority() {
 }
 
 double EffectorNode::get_weight() {
-    if (_ik_effector == NULL)
-        return -1;
-    else
-        return _ik_effector->weight;
+    return _weight;
 }
 
 void EffectorNode::set_weight(double weight) {
+    _weight = weight;
     if (_ik_effector != NULL)
         _ik_effector->weight = weight;
 }
 
+/**
+ * Get IK effector. Returns a reference to an external library's structure.
+ * [IK]
+ */
+struct ik_effector_t* EffectorNode::get_ik_effector() {
+    return _ik_effector;
+}
+
+/**
+ * Rebuilds external library's structures.
+ * [IK]
+ */
 unsigned int EffectorNode::rebuild_ik(struct ik_solver_t* ik_solver, unsigned int node_id) {
     NodePath effector = NodePath::any_path(this);
     NodePath parent_bone = effector.get_parent();
@@ -57,7 +69,7 @@ unsigned int EffectorNode::rebuild_ik(struct ik_solver_t* ik_solver, unsigned in
             ((BoneNode*) parent_bone.node())->get_ik_node());
 
         _ik_effector->chain_length = _chain_length;
-        _ik_effector->weight = 1;
+        _ik_effector->weight = _weight;
     }
 
     return node_id;
@@ -69,8 +81,10 @@ void EffectorNode::sync_p2ik_local() {
     NodePath chain_root = get_chain_root();
 
     // IK positions and rotations are relative to chain root
-    _ik_effector->target_position = LVecBase3_to_IKVec3(effector.get_pos(chain_root));
-    _ik_effector->target_rotation = LQuaternion_to_IKQuat(effector.get_quat(chain_root));
+    if (_ik_effector != NULL) {
+        _ik_effector->target_position = LVecBase3_to_IKVec3(effector.get_pos(chain_root));
+        _ik_effector->target_rotation = LQuaternion_to_IKQuat(effector.get_quat(chain_root));
+    }
 
     // save world-space position and rotation
     _position = effector.get_pos(armature);
@@ -105,6 +119,99 @@ void EffectorNode::sync_ik2p_chain_reverse() {
         // update chain starting from chain root
         for (int i = _chain_length; i >= 0; i--)
             ((BoneNode*) chain[i].node())->sync_ik2p_local();
+    }
+
+    // update myself
+    sync_ik2p_local();
+}
+
+void EffectorNode::inverse_kinematics_ccd(
+        double threshold, unsigned int min_iterations, unsigned int max_iterations) {
+    NodePath target = NodePath::any_path(this);
+    NodePath end_effector = target.get_parent();
+    NodePath armature = get_armature(target);
+
+    // save world-space target position because it will be modified
+    sync_p2ik_local();
+    LPoint3 target_pos_ws = target.get_pos(armature);
+
+    double err, ang;
+    bool target_reached = false;
+    for (unsigned int i = 0; i < max_iterations; i++) {
+        if (i >= min_iterations) {
+            err = (target_pos_ws - end_effector.get_pos(armature)).length();
+            if (err < threshold) {
+                target_reached = true;
+                break;
+            }
+        }
+
+        NodePath bone = target;
+        for (unsigned int j = 0; j < _chain_length + 1; j++) {
+            bone = bone.get_parent();
+
+            if (((BoneNode*) bone.node())->is_static())
+                continue;
+
+            // same as "target.get_pos(bone)" but using saved world-space position
+            LPoint3 target_pos = bone.get_relative_point(armature, target_pos_ws);
+
+            LPoint3 pos = LPoint3::zero();
+            LPoint3 ee = end_effector.get_pos(bone);
+
+            LVector3 d1 = target_pos - pos;
+            LVector3 d2 = ee - pos;
+
+            LVector3 cross = d1.cross(d2).normalized();
+            if (cross.length_squared() < 1e-9)
+                continue;
+
+            ang = d2.normalized().signed_angle_rad(d1.normalized(), cross);
+            LQuaternion q;
+            q.set_from_axis_angle_rad(ang, cross);
+            // Add this rotation to the current rotation:
+            LQuaternion q_old = bone.get_quat(armature);
+            LQuaternion q_new = q * q_old;
+            q_new.normalize();
+
+            // Correct rotation for hinge:
+            LVector3 axis = ((BoneNode*) bone.node())->get_axis();
+            if (axis != LVector3::zero()) {
+                LVector3 my_axis_in_parent_space = axis;
+                LMatrix4 swing_twist = swing_twist_decomposition(q_new, -my_axis_in_parent_space);
+                LQuaternion swing = (LQuaternion) swing_twist.get_row(0);
+                LQuaternion twist = (LQuaternion) swing_twist.get_row(1);
+                q_new = twist;
+            }
+
+            LVector3 rot_axis = q_new.get_axis();
+            rot_axis.normalize();
+            ang = q_new.get_angle_rad();
+            if (rot_axis.length_squared() > 1e-3 && !isnan(ang) && fabs(ang) > 0) {  // valid rotation axis?
+                // reduce the angle
+                ang = fmod(ang, (M_PI * 2));
+                // force into the minimum absolute value residue class, so that -180 < angle <= 180
+                if (ang > M_PI)
+                    ang -= 2 * M_PI;
+
+                if (fabs(ang) > 1e-6 && fabs(ang) < M_PI * 2) {
+                    double min_ang = ((BoneNode*) bone.node())->get_min_angle();
+                    double max_ang = ((BoneNode*) bone.node())->get_max_angle();
+
+                    if (axis != LVector3::zero() && (rot_axis - axis).length_squared() > 0.5) {
+                        // Clamp the rotation value:
+                        ang = fmax(-max_ang, fmin(-min_ang, ang));
+                    } else {
+                        // Clamp the rotation value:
+                        ang = fmax(min_ang, fmin(max_ang, ang));
+                    }
+                }
+
+                q_new.set_from_axis_angle_rad(ang, rot_axis);
+
+                bone.set_quat(armature, q_new);
+            }
+        }
     }
 
     sync_ik2p_local();

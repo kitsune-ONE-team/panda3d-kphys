@@ -9,7 +9,7 @@ unsigned int children_rebuild_ik(
     for (int i = 0; i < np.get_num_children(); i++) {
         NodePath child_np = np.get_child(i);
         if (is_bone(child_np)) {
-            node_id = ((BoneNode*) child_np.node())->rebuild_ik(ik_solver, node_id);
+            node_id = ((BoneNode*) child_np.node())->rebuild_ik_recursive(ik_solver, node_id);
         } else if (is_effector(child_np)) {
             node_id = ((EffectorNode*) child_np.node())->rebuild_ik(ik_solver, node_id);
         }

@@ -1,6 +1,8 @@
 #ifndef PANDA_BONE_H
 #define PANDA_BONE_H
 
+#include <math.h>
+
 #include "pandaNode.h"
 
 #ifdef CPPPARSER  // interrogate
@@ -15,15 +17,26 @@ class EXPORT_CLASS BoneNode: public PandaNode {
 PUBLISHED:
     explicit BoneNode(const char* name, unsigned int bone_id);
     unsigned int get_bone_id();
+    void set_hinge_constraint(const LVecBase3& axis, double min_ang=-M_PI, double max_ang=M_PI);
+    void set_ball_constraint(double min_ang=-M_PI, double max_ang=M_PI);
+    bool is_static();
+    void set_static(bool is_static);
+    LVector3 get_axis();
+    double get_min_angle();
+    double get_max_angle();
 
 private:
     unsigned int _bone_id;
-    struct ik_node_t* _ik_node;
+    LVector3 _axis;  // [CCDIK] constraint axis
+    double _min_ang;  // [CCDIK] min constraint angle
+    double _max_ang;  // [CCDIK] max constraint angle
+    bool _is_static;  // [CCDIK]
+    struct ik_node_t* _ik_node;  // [IK] node
     static TypeHandle _type_handle;
 
 public:
     struct ik_node_t* get_ik_node();
-    unsigned int rebuild_ik(struct ik_solver_t* ik_solver, unsigned int node_id);
+    unsigned int rebuild_ik_recursive(struct ik_solver_t* ik_solver, unsigned int node_id);
     void sync_p2ik_recursive();
     void sync_ik2p_local();
 

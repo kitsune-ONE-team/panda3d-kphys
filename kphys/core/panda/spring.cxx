@@ -8,7 +8,7 @@ SpringConstraint::SpringConstraint(
         const BulletRigidBodyNode* node_b,
         const TransformState* frame_a,
         const TransformState* frame_b,
-    bool use_frame_a_ref) {
+        bool use_frame_a_ref) {
 
     btRigidBody* ptr_a = btRigidBody::upcast(node_a->get_object());
     btRigidBody* ptr_b = btRigidBody::upcast(node_b->get_object());

@@ -1,7 +1,7 @@
 #ifndef PANDA_TYPES_H
 #define PANDA_TYPES_H
 
-#include <nodePath.h>
+#include "nodePath.h"
 
 #define MAX_BONES 256
 #define FLOAT_SIZE 4

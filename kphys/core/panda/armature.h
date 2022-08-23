@@ -15,29 +15,34 @@ union LMatrix4Array;
 #include "kphys/core/panda/types.h"
 
 
+BEGIN_PUBLISH
+enum IK_ENGINE {
+    IK_ENGINE_IK = 0,  // https://github.com/TheComet/ik
+    IK_ENGINE_CCDIK = 1  // https://github.com/Germanunkol/CCD-IK-Panda3D
+};
+END_PUBLISH
+
 class EXPORT_CLASS ArmatureNode: public PandaNode {
 PUBLISHED:
     ArmatureNode(const char* name="armature");
     ~ArmatureNode();
     void reset();
     void rebuild_bind_pose();
-    void rebuild_ik();
+    void rebuild_ik(unsigned int ik_engine=IK_ENGINE_IK);
     void update_ik();
     void update_ik(unsigned int priority);
     void update_shader_inputs();
 
 private:
-    // initial local-space matrices
-    LMatrix4Array _bone_init_local;
-    // initial world-space inverted (inverse bind) matrices
-    LMatrix4Array _bone_init_inv;
-    // current world-space matrices
-    LMatrix4Array _bone_transform;
+    unsigned int _ik_engine;
+    LMatrix4Array _bone_init_local;  // initial local-space matrices
+    LMatrix4Array _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
+    LMatrix4Array _bone_transform;  // current world-space matrices
     Texture* _bone_transform_tex;
-    struct ik_solver_t* _ik_solver;
+    struct ik_solver_t* _ik_solver;  // [IK] solver engine
     static TypeHandle _type_handle;
 
-    void _update_matrices(NodePath np, LMatrix4 parent_mat, int is_current);
+    void _update_matrices(NodePath np, LMatrix4 parent_mat, bool is_current=true);
 
 public:
     void solve_ik(unsigned int priority);

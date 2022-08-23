@@ -12,6 +12,7 @@ TypeHandle ArmatureNode::_type_handle;
 
 ArmatureNode::ArmatureNode(const char* name):
         PandaNode(name),
+        _ik_engine(-1),
         _ik_solver(NULL) {
     _bone_transform_tex = new Texture();
     _bone_transform_tex->setup_buffer_texture(
@@ -32,17 +33,20 @@ void ArmatureNode::reset() {
     NodePathCollection effectors = armature.find_all_matches("**/+EffectorNode");
     NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
 
+    // save effectors
     for (int i = 0; i < effectors.get_num_paths(); i++) {
         NodePath np = effectors.get_path(i);
         ((EffectorNode*) np.node())->sync_p2ik_local();
     }
 
+    // reset bones
     for (int i = 0; i < bones.get_num_paths(); i++) {
         NodePath np = bones.get_path(i);
         unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
         np.set_mat(_bone_init_local.matrices[bone_id]);
     }
 
+    // restore effectors
     for (int i = 0; i < effectors.get_num_paths(); i++) {
         NodePath np = effectors.get_path(i);
         ((EffectorNode*) np.node())->sync_ik2p_local();
@@ -54,17 +58,21 @@ void ArmatureNode::rebuild_bind_pose() {
     _update_matrices(armature, LMatrix4::ident_mat(), 0);
 }
 
-void ArmatureNode::rebuild_ik() {
-    if (_ik_solver != NULL)
-        ik.solver.destroy(_ik_solver);
-    _ik_solver = ik.solver.create(IK_FABRIK);
-    _ik_solver->flags &= ~IK_ENABLE_CONSTRAINTS;
-    _ik_solver->flags &= ~IK_ENABLE_TARGET_ROTATIONS;
-    _ik_solver->flags |= IK_ENABLE_JOINT_ROTATIONS;
-    _ik_solver->max_iterations = 5;
+void ArmatureNode::rebuild_ik(unsigned int ik_engine) {
+    _ik_engine = ik_engine;
 
-    NodePath armature = NodePath::any_path(this);
-    children_rebuild_ik(armature, _ik_solver, 0);
+    if (_ik_engine == IK_ENGINE_IK) {
+        if (_ik_solver != NULL)
+            ik.solver.destroy(_ik_solver);
+        _ik_solver = ik.solver.create(IK_FABRIK);
+        _ik_solver->flags &= ~IK_ENABLE_CONSTRAINTS;
+        _ik_solver->flags &= ~IK_ENABLE_TARGET_ROTATIONS;
+        _ik_solver->flags |= IK_ENABLE_JOINT_ROTATIONS;
+        _ik_solver->max_iterations = 5;
+
+        NodePath armature = NodePath::any_path(this);
+        children_rebuild_ik(armature, _ik_solver, 0);
+    }
 }
 
 /**
@@ -113,7 +121,7 @@ void ArmatureNode::update_shader_inputs() {
  * Fill bone matrices array with world-space bone matrices
  * by recursively walking through the node graph.
  */
-void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, int is_current) {
+void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, bool is_current) {
     LMatrix4 mat = LMatrix4::ident_mat();
 
     if (is_bone(np)) {
@@ -163,10 +171,26 @@ void ArmatureNode::solve_ik(unsigned int priority) {
             ((EffectorNode*) np.node())->set_weight(0);
     }
 
-    ik.solver.set_tree(_ik_solver, ((BoneNode*) root_bone.node())->get_ik_node());
-    ik.solver.rebuild(_ik_solver);
-    ik.solver.solve(_ik_solver);
-    ik.solver.unlink_tree(_ik_solver);
+    switch (_ik_engine) {
+    case IK_ENGINE_IK:
+        ik.solver.set_tree(_ik_solver, ((BoneNode*) root_bone.node())->get_ik_node());
+        ik.solver.rebuild(_ik_solver);
+        ik.solver.solve(_ik_solver);
+        ik.solver.unlink_tree(_ik_solver);
+        break;
+
+    case IK_ENGINE_CCDIK:
+        for (int i = 0; i < nps.get_num_paths(); i++) {
+            NodePath np = nps.get_path(i);
+            EffectorNode* effector = (EffectorNode*) np.node();
+            if (effector->get_weight())
+                effector->inverse_kinematics_ccd();
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 /**

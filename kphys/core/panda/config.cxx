@@ -2,6 +2,7 @@
 
 #include "kphys/core/panda/armature.h"
 #include "kphys/core/panda/bone.h"
+#include "kphys/core/panda/ccdik.h"
 #include "kphys/core/panda/config.h"
 #include "kphys/core/panda/controller.h"
 #include "kphys/core/panda/converters.h"
