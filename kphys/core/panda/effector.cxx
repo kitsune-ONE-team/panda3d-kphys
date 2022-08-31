@@ -1,4 +1,7 @@
+/* https://docs.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=msvc-170 */
+#define _USE_MATH_DEFINES // for C
 #include <math.h>
+
 #include <stdio.h>
 
 #include "nodePath.h"
