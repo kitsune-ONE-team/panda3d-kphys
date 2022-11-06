@@ -33,9 +33,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT core.in core_igate.cpp
   COMMAND interrogate -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L
-  -I${CMAKE_CURRENT_SOURCE_DIR}
+  -I${CMAKE_SOURCE_DIR}
   -I${PANDA_INCLUDE_DIR}/panda3d
-  -S${CMAKE_CURRENT_SOURCE_DIR}
+  -S${CMAKE_SOURCE_DIR}
   -S${PANDA_INCLUDE_DIR}/panda3d/parser-inc
   -oc core_igate.cpp
   -od core.in

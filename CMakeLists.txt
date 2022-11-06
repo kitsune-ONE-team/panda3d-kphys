@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(kitsunetsuki-phys)
+project(panda3d-kphys)
 
 if(WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")

@@ -1,9 +1,8 @@
 #ifndef BULLET_CONTROLLER_H
 #define BULLET_CONTROLLER_H
 
-
 #ifdef CPPPARSER  // interrogate
-#include "btBulletDynamicsCommon.h"  // panda3d parser-inc
+#include <btBulletDynamicsCommon.h>  // panda3d parser-inc
 #else  // normal compiler
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #endif

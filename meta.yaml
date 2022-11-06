@@ -1,6 +1,6 @@
 package:
   name: panda3d-kphys
-  version: "0.4.1"
+  version: "0.4.2"
 
 source:
   path: .
@@ -19,13 +19,13 @@ build:
 
 requirements:
   build:
-    - bullet ==3.17
-    - cmake
-    - conda ==4.13.0
+    - bullet==3.17
+    - cmake==3.22.1
+    - conda==4.13.0
     - libgcc-ng # [unix]
     - libstdcxx-ng # [unix]
     - panda3d
-    - python ==3.10.0
+    - python==3.10.0
   run:
     - libgcc-ng # [unix]
     - libstdcxx-ng # [unix]

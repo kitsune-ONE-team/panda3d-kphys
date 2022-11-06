@@ -27,7 +27,7 @@ class kphys_build_ext(build_ext):
 if __name__ == "__main__":
     setuptools.setup(
         name='panda3d-kphys',
-        version='0.4.1',
+        version='0.4.2',
         description='Physics extensions for Panda3D',
         long_description=(
             'Physics extensions for Panda3D '

@@ -2,7 +2,7 @@
 #define PANDA_SPRING_H
 
 #ifdef CPPPARSER  // interrogate
-#include "btBulletDynamicsCommon.h"  // panda3d parser-inc
+#include <btBulletDynamicsCommon.h>  // panda3d parser-inc
 #else  // normal compiler
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
 #endif

@@ -1,7 +1,8 @@
 Physics extensions for Panda3D
 ==============================
 
-Physics extensions for Panda3D originally made for the KITSUNETSUKI project game.
+Physics extensions for the Panda3D game engine
+originally made for the KITSUNETSUKI project game.
 
 
 Features
