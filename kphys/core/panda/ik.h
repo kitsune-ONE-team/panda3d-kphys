@@ -3,7 +3,11 @@
 
 #include "nodePath.h"
 
+#ifdef CPPPARSER  // interrogate
+struct ik_solver_t {};
+#else  // normal compiler
 #include "ik/ik.h"
+#endif
 
 /* #define IK_DEBUG */
 

@@ -22,7 +22,7 @@ set(IK_LIB_TYPE "STATIC" CACHE STRING "SHARED or STATIC library" FORCE)
 add_subdirectory(${IK_PATH} EXCLUDE_FROM_ALL)
 include_directories(${IK_PATH}/include/public)
 
-find_path(PANDA_INCLUDE_DIR NAMES panda3d/pandatoolbase.h)
+find_path(PANDA_INCLUDE_DIR NAMES panda3d/pandaSystem.h)
 include_directories(${PANDA_INCLUDE_DIR}/panda3d)
 find_library(PANDAFRAMEWORK_LIBRARY_PATH NAMES libp3framework.so libp3framework.lib)
 get_filename_component(PANDA_LIBRARY_DIR ${PANDAFRAMEWORK_LIBRARY_PATH} DIRECTORY)
@@ -42,7 +42,7 @@ if(WIN32)
     libp3direct
     libp3interrogatedb
     # PANDABULLET
-    libpandabullet
+    libp3bullet
     )
 else()
   set(PANDA_LIBS
@@ -58,7 +58,7 @@ else()
     p3direct
     p3interrogatedb
     # PANDABULLET
-    pandabullet
+    p3bullet
     )
 endif()
 
