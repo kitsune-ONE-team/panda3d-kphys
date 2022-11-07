@@ -28,39 +28,20 @@ find_library(PANDAFRAMEWORK_LIBRARY_PATH NAMES libp3framework.so libp3framework.
 get_filename_component(PANDA_LIBRARY_DIR ${PANDAFRAMEWORK_LIBRARY_PATH} DIRECTORY)
 link_directories(${PANDA_LIBRARY_DIR})
 
-if(WIN32)
-  set(PANDA_LIBS
-    # PRIMARY
-    libp3framework
-    # COMMON_PANDA_LIBS
-    libpanda
-    libpandaexpress
-    # COMMON_DTOOL_LIBS
-    libp3dtool
-    libp3dtoolconfig
-    # EXTRA
-    libp3direct
-    libp3interrogatedb
-    # PANDABULLET
-    libp3bullet
-    )
-else()
-  set(PANDA_LIBS
-    # PRIMARY
-    p3framework
-    # COMMON_PANDA_LIBS
-    panda
-    pandaexpress
-    # COMMON_DTOOL_LIBS
-    p3dtool
-    p3dtoolconfig
-    # EXTRA
-    p3direct
-    p3interrogatedb
-    # PANDABULLET
-    p3bullet
-    )
-endif()
+set(PANDA_LIBS
+  # PRIMARY
+  p3framework
+  # COMMON_PANDA_LIBS
+  panda
+  pandaexpress
+  # COMMON_DTOOL_LIBS
+  p3dtool
+  p3dtoolconfig
+  # EXTRA
+  p3direct
+  p3interrogatedb
+  # PANDABULLET
+  p3bullet)
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(kphys)
