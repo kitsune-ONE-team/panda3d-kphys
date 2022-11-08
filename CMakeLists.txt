@@ -7,7 +7,7 @@ if(WIN32)
   add_definitions("/wd4996 /wd4275 /wd4267 /wd4101 /wd4273")
 else()
   set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11 -fno-rtti")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11")
 endif()
 
 find_package(PythonInterp 3.2 REQUIRED)
@@ -28,21 +28,40 @@ find_library(PANDAFRAMEWORK_LIBRARY_PATH NAMES libp3framework.so libp3framework.
 get_filename_component(PANDA_LIBRARY_DIR ${PANDAFRAMEWORK_LIBRARY_PATH} DIRECTORY)
 link_directories(${PANDA_LIBRARY_DIR})
 
-set(PANDA_LIBS
-  # PRIMARY
-  p3framework
-  # COMMON_PANDA_LIBS
-  panda
-  pandaexpress
-  # COMMON_DTOOL_LIBS
-  p3dtool
-  p3dtoolconfig
-  # EXTRA
-  p3direct
-  p3interrogatedb
-  # PANDABULLET
-  p3bullet
-)
+if(EXISTS "${PANDA_LIBRARY_DIR}/libp3framework.lib")
+  # makepanda build
+  set(PANDA_LIBS
+    # PRIMARY
+    libp3framework
+    # COMMON_PANDA_LIBS
+    libpanda
+    libpandaexpress
+    # COMMON_DTOOL_LIBS
+    libp3dtool
+    libp3dtoolconfig
+    # EXTRA
+    libp3direct
+    libp3interrogatedb
+    # PANDABULLET
+    p3bullet)
+
+else()
+  # cmake build
+  set(PANDA_LIBS
+    # PRIMARY
+    p3framework
+    # COMMON_PANDA_LIBS
+    panda
+    pandaexpress
+    # COMMON_DTOOL_LIBS
+    p3dtool
+    p3dtoolconfig
+    # EXTRA
+    p3direct
+    p3interrogatedb
+    # PANDABULLET
+    p3bullet)
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(kphys)

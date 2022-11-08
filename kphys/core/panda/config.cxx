@@ -14,7 +14,7 @@
 
 
 Configure(config_core);
-NotifyCategoryDef(core , "");
+NotifyCategoryDef(core, "");
 
 ConfigureFn(config_core) {
     init_libcore();
