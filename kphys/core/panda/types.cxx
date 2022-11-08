@@ -5,21 +5,21 @@
 
 
 int is_armature(NodePath np) {
-    if (dynamic_cast<const ArmatureNode*>(np.node()) != nullptr)
+    if (((PandaNode*) np.node())->is_of_type(ArmatureNode::get_class_type()))
         return 1;
     else
         return 0;
 }
 
 int is_bone(NodePath np) {
-    if (dynamic_cast<const BoneNode*>(np.node()) != nullptr)
+    if (((PandaNode*) np.node())->is_of_type(BoneNode::get_class_type()))
         return 1;
     else
         return 0;
 }
 
 int is_effector(NodePath np) {
-    if (dynamic_cast<const EffectorNode*>(np.node()) != nullptr)
+    if (((PandaNode*) np.node())->is_of_type(EffectorNode::get_class_type()))
         return 1;
     else
         return 0;
