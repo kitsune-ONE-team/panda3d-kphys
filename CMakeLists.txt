@@ -28,22 +28,27 @@ find_library(PANDAFRAMEWORK_LIBRARY_PATH NAMES libp3framework.so libp3framework.
 get_filename_component(PANDA_LIBRARY_DIR ${PANDAFRAMEWORK_LIBRARY_PATH} DIRECTORY)
 link_directories(${PANDA_LIBRARY_DIR})
 
-if(EXISTS "${PANDA_LIBRARY_DIR}/libp3framework.lib")
+if((EXISTS "${PANDA_LIBRARY_DIR}/libpandabullet.so") OR (EXISTS "${PANDA_LIBRARY_DIR}/libpandabullet.lib"))
   # makepanda build
+  if(WIN32)
+    set(PANDA_PREFIX "lib")
+  else()
+    set(PANDA_PREFIX "")
+  endif()
   set(PANDA_LIBS
     # PRIMARY
-    libp3framework
+    ${PANDA_PREFIX}p3framework
     # COMMON_PANDA_LIBS
-    libpanda
-    libpandaexpress
+    ${PANDA_PREFIX}panda
+    ${PANDA_PREFIX}pandaexpress
     # COMMON_DTOOL_LIBS
-    libp3dtool
-    libp3dtoolconfig
+    ${PANDA_PREFIX}p3dtool
+    ${PANDA_PREFIX}p3dtoolconfig
     # EXTRA
-    libp3direct
-    libp3interrogatedb
+    ${PANDA_PREFIX}p3direct
+    ${PANDA_PREFIX}p3interrogatedb
     # PANDABULLET
-    p3bullet)
+    ${PANDA_PREFIX}pandabullet)
 
 else()
   # cmake build
