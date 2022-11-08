@@ -7,7 +7,7 @@ if(WIN32)
   add_definitions("/wd4996 /wd4275 /wd4267 /wd4101 /wd4273")
 else()
   set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11 -fno-rtti")
 endif()
 
 find_package(PythonInterp 3.2 REQUIRED)
@@ -41,7 +41,8 @@ set(PANDA_LIBS
   p3direct
   p3interrogatedb
   # PANDABULLET
-  p3bullet)
+  p3bullet
+)
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(kphys)
