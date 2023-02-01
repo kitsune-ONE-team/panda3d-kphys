@@ -1,25 +1,65 @@
-import json
-import os
 import struct
 
 from panda3d.core import (
-    get_model_path, Filename, LMatrix4, LQuaternion,
+    CS_zup_right, CullFaceAttrib, Light, LMatrix4, LQuaternion,
     NodePath, ModelRoot, PandaNode, TransformState)
 
-from gltf.converter import read_glb_chunk, Converter, GltfSettings
+from gltf.converter import Converter, HAVE_BULLET, get_extras
+from gltf.parseutils import parse_gltf_file
 
 from .core import ArmatureNode, BoneNode
+
+
+class DummyCharacter(object):
+    bundles = []
 
 
 class KPhysConverter(Converter):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._joint_ids = {}  # node id to joint index mapping
+        self._skinned_nps = {}
+
+    def load_skin(self, skinid, gltf_skin, gltf_data):
+        # child to parent mapping
+        parents = {}
+        for i, node in enumerate(gltf_data['nodes']):
+            for child in node.get('children', ()):
+                parents[child] = i
+
+        # search for the root bone
+        for i in gltf_skin['joints']:
+            if parents.get(i) not in gltf_skin['joints']:  # no parent bone
+                self.skeletons[i] = skinid
+                break
+
+    def build_character(self, char, nodeid, jvtmap, cvsmap, gltf_data, recurse=True):
+        super().build_character(
+            DummyCharacter(), nodeid,
+            jvtmap, cvsmap, gltf_data, recurse=recurse)
 
     def build_character_sliders(self, *args, **kw):
         return {}
 
-    def update(self, gltf_data, writing_bam=False):
+    def build_character_joints(self, char, root_nodeids, affected_nodeids, skinid, gltf_data):
+        gltf_skin = gltf_data['skins'][skinid]
+
+        def create_joint(nodeid):
+            node = gltf_data['nodes'][nodeid]
+
+            if nodeid in gltf_skin['joints']:
+                joint_index = gltf_skin['joints'].index(nodeid)
+                self._joint_ids[nodeid] = joint_index
+
+            for child in node.get('children', []):
+                create_joint(child)
+
+        for root_nodeid in root_nodeids:
+            create_joint(root_nodeid)
+
+        return {}
+
+    def update(self, gltf_data):
         #pprint.pprint(gltf_data)
 
         skip_axis_conversion = (
@@ -62,10 +102,6 @@ class KPhysConverter(Converter):
         for meshid, gltf_mesh in enumerate(gltf_data.get('meshes', [])):
             self.load_mesh(meshid, gltf_mesh, gltf_data)
 
-        # If we support writing bam 6.40, we can safely write out
-        # instanced lights.  If not, we have to copy it.
-        copy_lights = writing_bam and not hasattr(BamWriter, 'root_node')
-
         # Build scenegraphs
         def add_node(root, gltf_scene, nodeid, jvtmap, cvsmap):
             try:
@@ -74,6 +110,7 @@ class KPhysConverter(Converter):
                 print("Could not find node with index: {}".format(nodeid))
                 return
 
+            scene_extras = get_extras(gltf_scene)
             node_name = gltf_node.get('name', 'node'+str(nodeid))
             if nodeid in self._joint_nodes:
                 # Handle non-joint children of joints, but don't add joints themselves
@@ -86,9 +123,10 @@ class KPhysConverter(Converter):
 
             if nodeid in self.skeletons:
                 # This node is the root of an animated character.
-                # panda_node = CharacterNode(node_name)
-                panda_node = ArmatureNode(node_name)
-            elif nodeid in self._joint_ids:
+                # panda_node = Character(node_name)
+                # prebuild character data
+                self.build_character(None, nodeid, {}, {}, gltf_data, recurse=False)
+            if nodeid in self._joint_ids:
                 panda_node = BoneNode(node_name, self._joint_ids[nodeid])
             else:
                 panda_node = PandaNode(node_name)
@@ -117,10 +155,13 @@ class KPhysConverter(Converter):
             self.node_paths[nodeid] = np
 
             if nodeid in self.skeletons:
-                self.build_character(panda_node, nodeid, jvtmap, cvsmap, gltf_data)
+                # self.build_character(panda_node, nodeid, jvtmap, cvsmap, gltf_data)
+                # wrap root bone in armature
+                char = ArmatureNode(node_name)
+                np.reparent_to(root.attach_new_node(char))
 
-            if 'extras' in gltf_scene and 'hidden_nodes' in gltf_scene['extras']:
-                if nodeid in gltf_scene['extras']['hidden_nodes']:
+            if 'hidden_nodes' in scene_extras:
+                if nodeid in scene_extras['hidden_nodes']:
                     panda_node = panda_node.make_copy()
 
             if 'mesh' in gltf_node:
@@ -130,20 +171,28 @@ class KPhysConverter(Converter):
 
                 # Does this mesh have weights, but are we not under a character?
                 # If so, create a character just for this mesh.
-                if gltf_mesh.get('weights') and not jvtmap and not cvsmap:
-                    mesh_name = gltf_mesh.get('name', 'mesh'+str(meshid))
-                    char = Character(mesh_name)
-                    cvsmap2 = {}
-                    self.build_character(char, nodeid, {}, cvsmap2, gltf_data, recurse=False)
-                    self.combine_mesh_morphs(mesh, meshid, cvsmap2)
+                # if gltf_mesh.get('weights') and not jvtmap and not cvsmap:
+                #     mesh_name = gltf_mesh.get('name', 'mesh'+str(meshid))
+                #     char = Character(mesh_name)
+                #     cvsmap2 = {}
+                #     self.build_character(char, nodeid, {}, cvsmap2, gltf_data, recurse=False)
+                #     self.combine_mesh_morphs(mesh, meshid, cvsmap2)
 
-                    np.attach_new_node(char).attach_new_node(mesh)
-                else:
+                #     np.attach_new_node(char).attach_new_node(mesh)
+                # else:
+                if True:
                     np.attach_new_node(mesh)
                     if jvtmap:
                         self.combine_mesh_skin(mesh, jvtmap)
                     if cvsmap:
                         self.combine_mesh_morphs(mesh, meshid, cvsmap)
+
+                    if 'skin' in gltf_node:
+                        skinid = gltf_node['skin']
+                        gltf_skin = gltf_data['skins'][skinid]
+                        if 'skeleton' in gltf_skin:
+                            skeletonid = gltf_skin['skeleton']
+                            self._skinned_nps[skeletonid] = np
 
             if 'camera' in gltf_node:
                 camid = gltf_node['camera']
@@ -161,8 +210,6 @@ class KPhysConverter(Converter):
                 if has_light_ext:
                     lightid = gltf_node['extensions'][light_ext]['light']
                     light = self.lights[lightid]
-                    if copy_lights:
-                        light = light.make_copy()
                     lnp = np.attach_new_node(light)
                     if self.compose_cs == CS_zup_right:
                         lnp.set_p(lnp.get_p() - 90)
@@ -204,7 +251,7 @@ class KPhysConverter(Converter):
                             gltf_data['extensions']['BP_physics_engine']['engine'] == 'bullet'
                         )
                     else:
-                        use_bullet = self.settings.physics_engine == 'bullet'
+                        use_bullet = self.settings.collision_shapes == 'bullet'
                     if use_bullet and not HAVE_BULLET:
                         print(
                             'Warning: attempted to export for Bullet, which is unavailable, falling back to builtin'
@@ -236,10 +283,9 @@ class KPhysConverter(Converter):
                         phynp = np.attach_new_node(phynode)
                         for geomnode in np.find_all_matches('+GeomNode'):
                             geomnode.reparent_to(phynp)
-            if 'extras' in gltf_node:
-                for key, value in gltf_node['extras'].items():
-                    np.set_tag(key, str(value))
 
+            for key, value in get_extras(gltf_node).items():
+                np.set_tag(key, str(value))
 
             for child_nodeid in gltf_node.get('children', []):
                 add_node(np, gltf_scene, child_nodeid, jvtmap, cvsmap)
@@ -252,13 +298,14 @@ class KPhysConverter(Converter):
                     node.hide()
                 for child in node.get_children():
                     visible_recursive(child, visible)
-            if 'extras' in gltf_scene and 'hidden_nodes' in gltf_scene['extras']:
-                if nodeid in gltf_scene['extras']['hidden_nodes']:
-                    #print('Hiding', np)
-                    visible_recursive(np, False)
-                else:
-                    #print('Showing', np)
-                    visible_recursive(np, True)
+
+            hidden_nodes = scene_extras.get('hidden_nodes', [])
+            if nodeid in hidden_nodes:
+                #print('Hiding', np)
+                visible_recursive(np, False)
+            else:
+                #print('Showing', np)
+                visible_recursive(np, True)
 
             # Check if we need to deal with negative scale values
             scale = panda_node.get_transform().get_scale()
@@ -281,11 +328,14 @@ class KPhysConverter(Converter):
             scene_root = NodePath(ModelRoot(scene_name))
 
             node_list = gltf_scene['nodes']
-            if 'extras' in gltf_scene and 'hidden_nodes' in gltf_scene['extras']:
-                node_list += gltf_scene['extras']['hidden_nodes']
+            hidden_nodes = get_extras(gltf_scene).get('hidden_nodes', [])
+            node_list += hidden_nodes
 
             for nodeid in node_list:
                 add_node(scene_root, gltf_scene, nodeid, {}, {})
+
+            if self.settings.flatten_nodes:
+                scene_root.flatten_medium()
 
             self.scenes[sceneid] = scene_root
 
@@ -295,77 +345,25 @@ class KPhysConverter(Converter):
             self.active_scene = self.scenes[sceneid]
         if 'scenes' in gltf_data:
             gltf_scene = gltf_data['scenes'][sceneid]
-            if 'extras' in gltf_scene:
-                if 'background_color' in gltf_scene['extras']:
-                    self.background_color = gltf_scene['extras']['background_color']
-                if 'active_camera' in gltf_scene['extras']:
-                    self.active_camera = gltf_scene['extras']['active_camera']
+            scene_extras = get_extras(gltf_scene)
+            if 'background_color' in scene_extras:
+                self.background_color = scene_extras['background_color']
+            if 'active_camera' in scene_extras:
+                self.active_camera = scene_extras['active_camera']
 
-    def build_character_joints(self, char, root_nodeids, affected_nodeids, skinid, gltf_data):
-        gltf_skin = gltf_data['skins'][skinid]
-
-        def create_joint(nodeid):
-            node = gltf_data['nodes'][nodeid]
-            node_name = node.get('name', 'bone'+str(nodeid))
-
-            if nodeid in gltf_skin['joints']:
-                joint_index = gltf_skin['joints'].index(nodeid)
-                self._joint_ids[nodeid] = joint_index
-
-            for child in node.get('children', []):
-                create_joint(child)
-
-        for root_nodeid in root_nodeids:
-            create_joint(root_nodeid)
-
-        return {}
+        # move geom nodes to skeleton bones
+        for skeletonid, np in self._skinned_nps.items():
+            bone = self.node_paths[skeletonid]
+            t = np.get_transform(bone)
+            np.reparent_to(bone)
+            np.set_transform(t)
 
 
-def load_actor(src, gltf_settings=None, converter_class=None):
-    if gltf_settings is None:
-        gltf_settings = GltfSettings()
-
+def load_actor(file_path, gltf_settings=None, converter_class=None):
     if converter_class is None:
         converter_class = KPhysConverter
 
-    if not isinstance(src, Filename):
-        src = Filename.from_os_specific(src)
-
-    indir = Filename(src.get_dirname())
-    get_model_path().prepend_directory(indir)
-
-    converter = converter_class(indir=indir, outdir=os.getcwd(), settings=gltf_settings)
-
-    with open(src, 'rb') as glb_file:
-        if glb_file.read(4) == b'glTF':
-            version, = struct.unpack('<I', glb_file.read(4))
-            if version != 2:
-                raise RuntimeError("Only GLB version 2 is supported, file is version {0}".format(version))
-
-            length, = struct.unpack('<I', glb_file.read(4))
-
-            chunk_type, chunk_data = read_glb_chunk(glb_file)
-            assert chunk_type == b'JSON'
-            gltf_data = json.loads(chunk_data.decode('utf-8'))
-
-            if glb_file.tell() < length:
-                #if read_bytes % 4 != 0:
-                #    glb_file.read((4 - read_bytes) % 4)
-                chunk_type, chunk_data = read_glb_chunk(glb_file)
-                assert chunk_type == b'BIN\000'
-                converter.buffers[0] = chunk_data
-
-            converter.update(gltf_data, writing_bam=False)
-
-        else:
-            # Re-open as a text file.
-            glb_file.close()
-
-            with open(src) as gltf_file:
-                gltf_data = json.load(gltf_file)
-                converter.update(gltf_data, writing_bam=False)
-
-    if gltf_settings.print_scene:
-        converter.active_scene.ls()
-
-    return converter.active_scene
+    converter = converter_class(file_path, settings=gltf_settings)
+    gltf_data = parse_gltf_file(file_path)
+    converter.update(gltf_data)
+    return converter.active_scene.node()

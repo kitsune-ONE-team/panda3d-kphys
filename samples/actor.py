@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 import os
 import sys
+
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(PROJECT_PATH, 'dist'))
 
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -33,7 +37,8 @@ class ActorSample(ShowBase):
         self._texts = []
         for i in range(2):
             filepath = os.path.join(os.path.dirname(__file__), 'yuki', 'scene.gltf')
-            scene = load_actor(filepath)
+            node = load_actor(filepath)
+            scene = NodePath(node)
             actor = scene.find('**/+ArmatureNode')
             actor.reparent_to(self.render)
             actor.set_x(i - 0.5)
