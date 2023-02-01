@@ -355,8 +355,13 @@ class KPhysConverter(Converter):
         for mesh_nodeid, joint_nodeid in self._mesh2joint.items():
             mesh = self.node_paths[mesh_nodeid]
             bone = self.node_paths[joint_nodeid]
-            t = mesh.get_transform(bone)
-            mesh.reparent_to(bone)
+            # search for the armature
+            armature = bone
+            while armature.has_parent() and armature.node().get_class_type().get_name() != 'ArmatureNode':
+                armature = armature.get_parent()
+            # reparent with saving transforms
+            t = mesh.get_transform(armature)
+            mesh.reparent_to(armature)
             mesh.set_transform(t)
 
 
