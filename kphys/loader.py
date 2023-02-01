@@ -193,6 +193,11 @@ class KPhysConverter(Converter):
                         if 'skeleton' in gltf_skin:
                             skeletonid = gltf_skin['skeleton']
                             self._mesh2joint[nodeid] = skeletonid
+                        else:
+                            for skeletonid, skinid2 in self.skeletons.items():
+                                if skinid == skinid2:
+                                    self._mesh2joint[nodeid] = skeletonid
+                                    break
 
             if 'camera' in gltf_node:
                 camid = gltf_node['camera']
