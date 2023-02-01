@@ -18,7 +18,7 @@ class KPhysConverter(Converter):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self._joint_ids = {}  # node id to joint index mapping
-        self._skinned_nps = {}
+        self._mesh2joint = {}  # mesh node id to joint node id mapping
 
     def load_skin(self, skinid, gltf_skin, gltf_data):
         # child to parent mapping
@@ -192,7 +192,7 @@ class KPhysConverter(Converter):
                         gltf_skin = gltf_data['skins'][skinid]
                         if 'skeleton' in gltf_skin:
                             skeletonid = gltf_skin['skeleton']
-                            self._skinned_nps[skeletonid] = np
+                            self._mesh2joint[nodeid] = skeletonid
 
             if 'camera' in gltf_node:
                 camid = gltf_node['camera']
@@ -352,11 +352,12 @@ class KPhysConverter(Converter):
                 self.active_camera = scene_extras['active_camera']
 
         # move geom nodes to skeleton bones
-        for skeletonid, np in self._skinned_nps.items():
-            bone = self.node_paths[skeletonid]
-            t = np.get_transform(bone)
-            np.reparent_to(bone)
-            np.set_transform(t)
+        for mesh_nodeid, joint_nodeid in self._mesh2joint.items():
+            mesh = self.node_paths[mesh_nodeid]
+            bone = self.node_paths[joint_nodeid]
+            t = mesh.get_transform(bone)
+            mesh.reparent_to(bone)
+            mesh.set_transform(t)
 
 
 def load_actor(file_path, gltf_settings=None, converter_class=None):
