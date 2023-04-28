@@ -1,11 +1,13 @@
 import struct
 
+from direct.stdpy.file import open as dopen
+
 from panda3d.core import (
     CS_zup_right, CullFaceAttrib, Light, LMatrix4, LQuaternion,
     NodePath, ModelRoot, PandaNode, TransformState)
 
 from gltf.converter import Converter, HAVE_BULLET, get_extras
-from gltf.parseutils import parse_gltf_file
+from gltf.parseutils import parse_glb_data, parse_gltf_data
 
 from .core import ArmatureNode, BoneNode
 
@@ -370,11 +372,30 @@ class KPhysConverter(Converter):
             mesh.set_transform(t)
 
 
-def load_actor(file_path, gltf_settings=None, converter_class=None):
+def is_glb_file(filepath):
+    return filepath.endswith('.glb')
+
+
+def parse_gltf_file(filepath):
+    data = None
+
+    if is_glb_file(filepath):
+        with dopen(filepath, 'rb') as glbfile:
+            data = parse_glb_data(glbfile)
+
+    else:
+        with dopen(filepath, 'r') as gltffile:
+            data = parse_gltf_data(gltffile)
+
+    return data
+
+
+def load_actor(file_path=None, gltf_data=None, gltf_settings=None, converter_class=None):
     if converter_class is None:
         converter_class = KPhysConverter
 
     converter = converter_class(file_path, settings=gltf_settings)
-    gltf_data = parse_gltf_file(file_path)
+    if gltf_data is None:
+        gltf_data = parse_gltf_file(file_path)
     converter.update(gltf_data)
     return converter.active_scene.node()
