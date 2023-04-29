@@ -6,7 +6,7 @@ from panda3d.core import (
     CS_zup_right, CullFaceAttrib, Light, LMatrix4, LQuaternion,
     NodePath, ModelRoot, PandaNode, TransformState)
 
-from gltf.converter import Converter, HAVE_BULLET, get_extras
+from gltf.converter import Converter, CharInfo, HAVE_BULLET, get_extras
 from gltf.parseutils import parse_glb_data, parse_gltf_data
 
 from .core import ArmatureNode, BoneNode
@@ -143,6 +143,8 @@ class KPhysConverter(Converter):
                 skinid = self.skeletons[nodeid]
                 charinfo = self.characters[skinid]
                 panda_node = charinfo.character
+            elif nodeid in self._joint_ids:
+                panda_node = BoneNode(node_name, self._joint_ids[nodeid])
             else:
                 panda_node = PandaNode(node_name)
 
@@ -186,15 +188,6 @@ class KPhysConverter(Converter):
                 if "skin" in gltf_node:
                     skinid = gltf_node["skin"]
                     charinfo = self.characters[skinid]
-
-                # Does this mesh have weights, but are we not under a character?
-                # If so, create a character just for this mesh.
-                if gltf_mesh.get('weights') and not charinfo:
-                    mesh_name = gltf_mesh.get('name', 'mesh'+str(meshid))
-                    charinfo = Character(mesh_name)
-                    charinfo = CharInfo(mesh_name)
-                    self.build_character(charinfo, nodeid, gltf_data, recurse=False)
-                    charinfo.nodepath.reparent_to(np)
 
                 if charinfo:
                     charinfo.nodepath.attach_new_node(mesh)
