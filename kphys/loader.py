@@ -3,7 +3,7 @@ import struct
 from direct.stdpy.file import open as dopen
 
 from panda3d.core import (
-    CS_zup_right, CullFaceAttrib, Light, LMatrix4, LQuaternion,
+    CS_zup_right, CullFaceAttrib, InternalName, Light, LMatrix4, LQuaternion,
     NodePath, ModelRoot, PandaNode, TransformState)
 
 from gltf.converter import Converter, CharInfo, HAVE_BULLET, get_extras
@@ -12,8 +12,17 @@ from gltf.parseutils import parse_glb_data, parse_gltf_data
 from .core import ArmatureNode, BoneNode
 
 
-class DummyCharacter(object):
-    bundles = []
+class KInternalName(InternalName):
+    @staticmethod
+    def make(*args):
+        # don't break first texcoord
+        if len(args) < 2 or args[0] != 'texcoord.' or args[1] != 0:
+            args = [args[0].replace('.', '_')] + list(args[1:])
+        return InternalName.make(*args)
+
+
+import gltf.converter
+gltf.converter.InternalName = KInternalName
 
 
 class KPhysConverter(Converter):
@@ -35,10 +44,34 @@ class KPhysConverter(Converter):
                 self.skeletons[i] = skinid
                 break
 
-    def build_character(self, char, nodeid, jvtmap, cvsmap, gltf_data, recurse=True):
-        super().build_character(
-            DummyCharacter(), nodeid,
-            jvtmap, cvsmap, gltf_data, recurse=recurse)
+    def build_character(self, charinfo, nodeid, gltf_data, recurse=True):
+        name = charinfo.character.get_name()
+        charinfo.character = ArmatureNode(name)
+        charinfo.nodepath = NodePath(charinfo.character)
+
+        char = charinfo.character
+        affected_nodeids = set()
+
+        if nodeid in self.skeletons:
+            skinid = self.skeletons[nodeid]
+            if skinid >= 10000:
+                return
+            gltf_skin = gltf_data['skins'][skinid]
+
+            if 'skeleton' in gltf_skin:
+                root_nodeids = [gltf_skin['skeleton']]
+            else:
+                # find a common root node
+                joint_nodes = [gltf_data['nodes'][i] for i in gltf_skin['joints']]
+                child_set = list(itertools.chain(*[node.get('children', []) for node in joint_nodes]))
+                root_nodeids = [nodeid for nodeid in gltf_skin['joints'] if nodeid not in child_set]
+
+            charinfo.jvtmap.update(self.build_character_joints(char, root_nodeids,
+                                                               affected_nodeids, skinid,
+                                                               gltf_data))
+
+        charinfo.cvsmap.update(self.build_character_sliders(char, nodeid, affected_nodeids,
+                                                            gltf_data, recurse=recurse))
 
     def build_character_sliders(self, *args, **kw):
         return {}
