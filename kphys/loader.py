@@ -1,3 +1,4 @@
+import itertools
 import struct
 
 from direct.stdpy.file import open as dopen
