@@ -104,8 +104,25 @@ class KPhysConverter(Converter):
         for meshid, gltf_mesh in enumerate(gltf_data.get('meshes', [])):
             self.load_mesh(meshid, gltf_mesh, gltf_data)
 
+        def build_characters(nodeid):
+            try:
+                gltf_node = gltf_data['nodes'][nodeid]
+            except IndexError:
+                print("Could not find node with index: {}".format(nodeid))
+                return
+            node_name = gltf_node.get('name', 'node'+str(nodeid))
+
+            if nodeid in self.skeletons:
+                skinid = self.skeletons[nodeid]
+                charinfo = CharInfo(node_name)
+                self.build_character(charinfo, nodeid, gltf_data)
+                self.characters[skinid] = charinfo
+
+            for child_nodeid in gltf_node.get('children', []):
+                build_characters(child_nodeid)
+
         # Build scenegraphs
-        def add_node(root, gltf_scene, nodeid, jvtmap, cvsmap):
+        def add_node(root, gltf_scene, nodeid):
             try:
                 gltf_node = gltf_data['nodes'][nodeid]
             except IndexError:
@@ -114,22 +131,18 @@ class KPhysConverter(Converter):
 
             scene_extras = get_extras(gltf_scene)
             node_name = gltf_node.get('name', 'node'+str(nodeid))
-            if nodeid in self._joint_nodes:
+            if nodeid in self._joint_nodes and not nodeid in self.skeletons:
                 # Handle non-joint children of joints, but don't add joints themselves
                 for child_nodeid in gltf_node.get('children', []):
-                    add_node(root, gltf_scene, child_nodeid, jvtmap, cvsmap)
+                    add_node(root, gltf_scene, child_nodeid)
                 return
 
-            jvtmap = dict(jvtmap)
-            cvsmap = dict(cvsmap)
-
+            charinfo: CharInfo = None
             if nodeid in self.skeletons:
                 # This node is the root of an animated character.
-                # panda_node = Character(node_name)
-                # prebuild character data
-                self.build_character(None, nodeid, {}, {}, gltf_data, recurse=False)
-            if nodeid in self._joint_ids:
-                panda_node = BoneNode(node_name, self._joint_ids[nodeid])
+                skinid = self.skeletons[nodeid]
+                charinfo = self.characters[skinid]
+                panda_node = charinfo.character
             else:
                 panda_node = PandaNode(node_name)
 
@@ -153,14 +166,12 @@ class KPhysConverter(Converter):
 
             panda_node.set_transform(TransformState.make_mat(self.csxform_inv * gltf_mat * self.csxform))
 
-            np = self.node_paths.get(nodeid, root.attach_new_node(panda_node))
+            if charinfo:
+                np = charinfo.nodepath
+                np.reparent_to(root)
+            else:
+                np = self.node_paths.get(nodeid, root.attach_new_node(panda_node))
             self.node_paths[nodeid] = np
-
-            if nodeid in self.skeletons:
-                # self.build_character(panda_node, nodeid, jvtmap, cvsmap, gltf_data)
-                # wrap root bone in armature
-                char = ArmatureNode(node_name)
-                np.reparent_to(root.attach_new_node(char))
 
             if 'hidden_nodes' in scene_extras:
                 if nodeid in scene_extras['hidden_nodes']:
@@ -171,35 +182,26 @@ class KPhysConverter(Converter):
                 gltf_mesh = gltf_data['meshes'][meshid]
                 mesh = self.meshes[meshid]
 
+                charinfo = None
+                if "skin" in gltf_node:
+                    skinid = gltf_node["skin"]
+                    charinfo = self.characters[skinid]
+
                 # Does this mesh have weights, but are we not under a character?
                 # If so, create a character just for this mesh.
-                # if gltf_mesh.get('weights') and not jvtmap and not cvsmap:
-                #     mesh_name = gltf_mesh.get('name', 'mesh'+str(meshid))
-                #     char = Character(mesh_name)
-                #     cvsmap2 = {}
-                #     self.build_character(char, nodeid, {}, cvsmap2, gltf_data, recurse=False)
-                #     self.combine_mesh_morphs(mesh, meshid, cvsmap2)
+                if gltf_mesh.get('weights') and not charinfo:
+                    mesh_name = gltf_mesh.get('name', 'mesh'+str(meshid))
+                    charinfo = Character(mesh_name)
+                    charinfo = CharInfo(mesh_name)
+                    self.build_character(charinfo, nodeid, gltf_data, recurse=False)
+                    charinfo.nodepath.reparent_to(np)
 
-                #     np.attach_new_node(char).attach_new_node(mesh)
-                # else:
-                if True:
+                if charinfo:
+                    charinfo.nodepath.attach_new_node(mesh)
+                    self.combine_mesh_skin(mesh, charinfo)
+                    self.combine_mesh_morphs(mesh, meshid, charinfo)
+                else:
                     np.attach_new_node(mesh)
-                    if jvtmap:
-                        self.combine_mesh_skin(mesh, jvtmap)
-                    if cvsmap:
-                        self.combine_mesh_morphs(mesh, meshid, cvsmap)
-
-                    if 'skin' in gltf_node:
-                        skinid = gltf_node['skin']
-                        gltf_skin = gltf_data['skins'][skinid]
-                        if 'skeleton' in gltf_skin:
-                            skeletonid = gltf_skin['skeleton']
-                            self._mesh2joint[nodeid] = skeletonid
-                        else:
-                            for skeletonid, skinid2 in self.skeletons.items():
-                                if skinid == skinid2:
-                                    self._mesh2joint[nodeid] = skeletonid
-                                    break
 
             if 'camera' in gltf_node:
                 camid = gltf_node['camera']
@@ -295,7 +297,7 @@ class KPhysConverter(Converter):
                 np.set_tag(key, str(value))
 
             for child_nodeid in gltf_node.get('children', []):
-                add_node(np, gltf_scene, child_nodeid, jvtmap, cvsmap)
+                add_node(np, gltf_scene, child_nodeid)
 
             # Handle visibility after children are loaded
             def visible_recursive(node, visible):
@@ -330,6 +332,11 @@ class KPhysConverter(Converter):
                 np.reparent_to(xformnp)
                 joint.add_net_transform(xformnp.node())
 
+            # if the NodePath children were moved under a Character and has no other children,
+            # then we can safely delete the NodePath
+            if charinfo and not np.children:
+                np.remove_node()
+
         for sceneid, gltf_scene in enumerate(gltf_data.get('scenes', [])):
             scene_name = gltf_scene.get('name', 'scene'+str(sceneid))
             scene_root = NodePath(ModelRoot(scene_name))
@@ -338,8 +345,13 @@ class KPhysConverter(Converter):
             hidden_nodes = get_extras(gltf_scene).get('hidden_nodes', [])
             node_list += hidden_nodes
 
+            # Run through and pre-build Characters
             for nodeid in node_list:
-                add_node(scene_root, gltf_scene, nodeid, {}, {})
+                build_characters(nodeid)
+
+            # Now iterate again to build the scene graph
+            for nodeid in node_list:
+                add_node(scene_root, gltf_scene, nodeid)
 
             if self.settings.flatten_nodes:
                 scene_root.flatten_medium()
