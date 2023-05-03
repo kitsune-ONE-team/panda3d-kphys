@@ -26,6 +26,7 @@ class EXPORT_CLASS ArmatureNode: public PandaNode {
 PUBLISHED:
     ArmatureNode(const char* name="armature");
     ~ArmatureNode();
+    void cleanup();
     void reset();
     void rebuild_bind_pose();
     void rebuild_ik(unsigned int ik_engine=IK_ENGINE_IK);

@@ -24,8 +24,15 @@ ArmatureNode::~ArmatureNode() {
     if (_ik_solver != NULL)
         ik.solver.destroy(_ik_solver);
 
-    _bone_transform_tex->release_all();
-    delete _bone_transform_tex;
+    // _bone_transform_tex->release_all();
+    // _bone_transform_tex->clear_ram_image();
+    // _bone_transform_tex->clear();
+    // delete _bone_transform_tex;
+}
+
+void ArmatureNode::cleanup() {
+    NodePath armature = NodePath::any_path(this);
+    armature.clear_shader_input("bone_transform_tex");
 }
 
 void ArmatureNode::reset() {
