@@ -13,6 +13,7 @@ union LMatrix4Array;
 
 #include "kphys/core/panda/ik.h"
 #include "kphys/core/panda/types.h"
+#include "kphys/core/panda/frame.h"
 
 
 BEGIN_PUBLISH
@@ -33,6 +34,7 @@ PUBLISHED:
     void update_ik();
     void update_ik(unsigned int priority);
     void update_shader_inputs();
+    void set_frame(Frame* frame);
 
 private:
     unsigned int _ik_engine;
@@ -40,6 +42,7 @@ private:
     LMatrix4Array _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
     LMatrix4Array _bone_transform;  // current world-space matrices
     Texture* _bone_transform_tex;
+    int _frame_transform_indices[MAX_BONES];
     struct ik_solver_t* _ik_solver;  // [IK] solver engine
     static TypeHandle _type_handle;
 
