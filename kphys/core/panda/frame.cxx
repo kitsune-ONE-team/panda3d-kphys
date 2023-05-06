@@ -8,7 +8,7 @@ Frame::Frame(const char* name): PandaNode(name) {
 }
 
 Frame::Frame(const char* name, unsigned long iframe): PandaNode(name) {
-  _iframe = iframe;
+    _iframe = iframe;
 }
 
 Frame::~Frame() {
@@ -25,10 +25,14 @@ char* Frame::get_bone_name(unsigned int i) {
 }
 
 ConstPointerTo<TransformState> Frame::get_transform(unsigned int i) {
-    return _transforms.at(i);
+    return _transforms.at(_bone_names.at(i));
+}
+
+ConstPointerTo<TransformState> Frame::get_transform(char* name) {
+    return _transforms.at(name);
 }
 
 void Frame::add_transform(char* name, ConstPointerTo<TransformState> transform) {
     _bone_names.push_back(name);
-    _transforms.push_back(transform);
+    _transforms[name] = transform;
 }

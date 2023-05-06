@@ -1,9 +1,8 @@
 #ifndef PANDA_BVHQ_H
 #define PANDA_BVHQ_H
 
-#include <vector>
-
 #include "nodePath.h"
+#include "pvector.h"
 #include "texture.h"
 
 #include "kphys/core/panda/animation.h"
@@ -12,7 +11,7 @@
 class BVHQJoint {
 public:
     char* name;
-    std::vector<char*> channels;
+    pvector<char*> channels;
 };
 
 
@@ -24,7 +23,7 @@ PUBLISHED:
 private:
     unsigned long _offset;
     char* _data;
-    std::vector<BVHQJoint*> _hierarchy;
+    pvector<BVHQJoint*> _hierarchy;
 
     char _readword(char* word, unsigned long size);
 

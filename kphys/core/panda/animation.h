@@ -1,9 +1,8 @@
 #ifndef PANDA_ANIM_H
 #define PANDA_ANIM_H
 
-#include <vector>
-
 #include "pandaNode.h"
+#include "pvector.h"
 
 #include "kphys/core/panda/frame.h"
 
@@ -22,7 +21,7 @@ private:
     static TypeHandle _type_handle;
 
 protected:
-    std::vector<Frame*> _motion;
+    pvector<Frame*> _motion;
     double _frame_time;
 
 public:

@@ -1,10 +1,10 @@
 #ifndef PANDA_FRAME_H
 #define PANDA_FRAME_H
 
-#include <vector>
-
 #include "nodePath.h"
 #include "pandaNode.h"
+#include "pmap.h"
+#include "pvector.h"
 #include "transformState.h"
 
 #include "kphys/core/panda/types.h"
@@ -18,11 +18,12 @@ PUBLISHED:
     unsigned int get_num_transforms();
     char* get_bone_name(unsigned int i);
     ConstPointerTo<TransformState> get_transform(unsigned int i);
+    ConstPointerTo<TransformState> get_transform(char* name);
 
 private:
     unsigned long _iframe;
-    std::vector<char*> _bone_names;
-    std::vector<ConstPointerTo<TransformState>> _transforms;
+    pvector<char*> _bone_names;
+    pmap<char*, ConstPointerTo<TransformState>> _transforms;
 
     static TypeHandle _type_handle;
 
