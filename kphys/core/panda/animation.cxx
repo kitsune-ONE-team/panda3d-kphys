@@ -1,12 +1,9 @@
 #include "kphys/core/panda/animation.h"
-#include "kphys/core/panda/frame.h"
-
-#include "kphys/core/panda/animation.h"
 
 
 TypeHandle Animation::_type_handle;
 
-Animation::Animation(const char* name): PandaNode(name) {}
+Animation::Animation(const char* name): Namable(name) {}
 
 Animation::~Animation() {
     _motion.clear();

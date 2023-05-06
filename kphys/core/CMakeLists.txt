@@ -1,6 +1,7 @@
 set(CORE_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/bullet/controller.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/animation.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/animator.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/armature.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bone.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bvhq.cxx
@@ -19,6 +20,7 @@ set(CORE_SOURCES
 set(CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/bullet/controller.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/animation.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/animator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/armature.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bone.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bvhq.h

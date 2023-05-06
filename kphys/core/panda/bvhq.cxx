@@ -95,7 +95,7 @@ BVHQ::BVHQ(const char* name, const char* data): Animation(name) {
 
         } else if (num_frames) {
             for (unsigned long iframe = 0; iframe < num_frames; iframe++) {
-                Frame* frame = new Frame(name, iframe);
+                Frame* frame = new Frame();
 
                 for (BVHQJoint* joint: _hierarchy) {
                     LVecBase3 pos, hpr;

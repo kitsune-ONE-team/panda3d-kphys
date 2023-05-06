@@ -2,7 +2,7 @@
 #define PANDA_FRAME_H
 
 #include "nodePath.h"
-#include "pandaNode.h"
+#include "typedReferenceCount.h"
 #include "pmap.h"
 #include "pvector.h"
 #include "transformState.h"
@@ -10,10 +10,9 @@
 #include "kphys/core/panda/types.h"
 
 
-class EXPORT_CLASS Frame: public PandaNode {
+class EXPORT_CLASS Frame: public TypedReferenceCount {
 PUBLISHED:
-    Frame(const char* name);
-    Frame(const char* name, unsigned long iframe);
+    Frame();
     ~Frame();
     unsigned int get_num_transforms();
     char* get_bone_name(unsigned int i);
@@ -34,8 +33,8 @@ public:
         return _type_handle;
     }
     static void init_type() {
-        PandaNode::init_type();
-        register_type(_type_handle, "Frame", PandaNode::get_class_type());
+        TypedReferenceCount::init_type();
+        register_type(_type_handle, "Frame", TypedReferenceCount::get_class_type());
     }
     virtual TypeHandle get_type() const {
         return get_class_type();

@@ -1,13 +1,14 @@
-#ifndef PANDA_ANIM_H
-#define PANDA_ANIM_H
+#ifndef PANDA_ANIMATION_H
+#define PANDA_ANIMATION_H
 
-#include "pandaNode.h"
+#include "typedReferenceCount.h"
+#include "namable.h"
 #include "pvector.h"
 
 #include "kphys/core/panda/frame.h"
 
 
-class EXPORT_CLASS Animation: public PandaNode {
+class EXPORT_CLASS Animation: public TypedReferenceCount, public Namable {
 PUBLISHED:
     Animation(const char* name);
     ~Animation();
@@ -29,8 +30,8 @@ public:
         return _type_handle;
     }
     static void init_type() {
-        PandaNode::init_type();
-        register_type(_type_handle, "Animation", PandaNode::get_class_type());
+        TypedReferenceCount::init_type();
+        register_type(_type_handle, "Animation", TypedReferenceCount::get_class_type());
     }
     virtual TypeHandle get_type() const {
         return get_class_type();

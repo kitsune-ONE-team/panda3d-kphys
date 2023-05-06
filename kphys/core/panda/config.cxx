@@ -1,6 +1,7 @@
 #include "dconfig.h"
 
 #include "kphys/core/panda/animation.h"
+#include "kphys/core/panda/animator.h"
 #include "kphys/core/panda/armature.h"
 #include "kphys/core/panda/bone.h"
 #include "kphys/core/panda/bvhq.h"
@@ -29,6 +30,7 @@ void init_libcore() {
         return;
     initialized = true;
 
+    AnimatorNode::init_type();
     Animation::init_type();
     BVHQ::init_type();
     Frame::init_type();

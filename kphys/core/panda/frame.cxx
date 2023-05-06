@@ -3,17 +3,16 @@
 
 TypeHandle Frame::_type_handle;
 
-Frame::Frame(const char* name): PandaNode(name) {
-    _iframe = 0;
-}
-
-Frame::Frame(const char* name, unsigned long iframe): PandaNode(name) {
-    _iframe = iframe;
-}
+Frame::Frame() {}
 
 Frame::~Frame() {
     _bone_names.clear();
     _transforms.clear();
+}
+
+void Frame::add_transform(char* name, ConstPointerTo<TransformState> transform) {
+  _bone_names.push_back(name);
+  _transforms[name] = transform;
 }
 
 unsigned int Frame::get_num_transforms() {
@@ -30,9 +29,4 @@ ConstPointerTo<TransformState> Frame::get_transform(unsigned int i) {
 
 ConstPointerTo<TransformState> Frame::get_transform(char* name) {
     return _transforms.at(name);
-}
-
-void Frame::add_transform(char* name, ConstPointerTo<TransformState> transform) {
-    _bone_names.push_back(name);
-    _transforms[name] = transform;
 }
