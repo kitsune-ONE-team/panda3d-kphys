@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "nodePath.h"
+#include "virtualFileSystem.h"
 
 #include "kphys/core/panda/armature.h"
 #include "kphys/core/panda/bone.h"
@@ -12,16 +13,28 @@
 #define WORD_MAX_LEN 256
 #define MAX_CHANNELS 10
 
+#define NO_HIERARCHY 1
+#define NO_MOTION 2
+#define NO_JOINT_NAME 3
+#define NO_CHANNELS 4
+#define NO_FRAMES 5
+#define NO_FRAME_TIME 6
+
+// #define DEBUG 1
+
 
 TypeHandle BVHQ::_type_handle;
 
-BVHQ::BVHQ(const char* name, const char* data): Animation(name) {
-    _offset = 0;
-    _data = (char*) malloc(sizeof(char) * strlen(data));
-    strcpy(_data, data);
+BVHQ::BVHQ(const char* name, Filename filename): Animation(name) {
+    VirtualFileSystem* vfs = VirtualFileSystem::get_global_ptr();
+    _istream = vfs->open_read_file(filename, true);
+
+    _frame_time = 0;
+    _frame_time_hns = 0;
 
     char* word = (char*) malloc(sizeof(char) * WORD_MAX_LEN);
     char end = ' ';
+    unsigned int exception = 0;
 
     unsigned long num_frames = 0;
 
@@ -30,63 +43,106 @@ BVHQ::BVHQ(const char* name, const char* data): Animation(name) {
         if (strcmp(word, "HIERARCHY") == 0)
             break;
     }
-    if (end == '\0')  // no hierarchy section
+    if (end == '\0') {
+        exception = NO_HIERARCHY;
         goto except;
+    }
 
     while (end != '\0') {  // HIERARCHY
         end = _readword(word, WORD_MAX_LEN);
 
         if (strcmp(word, "ROOT") == 0 || strcmp(word, "JOINT") == 0) {
-            end = _readword(word, WORD_MAX_LEN);  //  read bone name
-            if (end == '\0')  // no bone name
+            if (end == '\0' || end == '\n') {
+                exception = NO_JOINT_NAME;
                 goto except;
+            }
+            end = _readword(word, WORD_MAX_LEN);  //  read bone name
 
             BVHQJoint* joint = new BVHQJoint();
             joint->name = (char*) malloc(sizeof(char) * strlen(word));
-            joint->channels.clear();
             strcpy(joint->name, word);
             _hierarchy.push_back(joint);
-            // printf("JOINT %s\n", joint->name);
+#ifdef DEBUG
+            printf("JOINT %s\n", joint->name);
+#endif
 
         } else if (strcmp(word, "CHANNELS") == 0) {
-            end = _readword(word, WORD_MAX_LEN);  // read channels count
-            if (end == '\0')  // no channels count
+            if (end == '\0' || end == '\n') {
+                exception = NO_CHANNELS;
                 goto except;
+            }
+            end = _readword(word, WORD_MAX_LEN);  // read channels count
 
             unsigned short bone_num_channels = atoi(word);
-            // printf("JOINT %s CHANNELS %d\n", _hierarchy.back()->name, bone_num_channels);
+#ifdef DEBUG
+            printf("JOINT %s CHANNELS %d\n", _hierarchy.back()->name, bone_num_channels);
+#endif
+
+            if (end == '\0' || end == '\n') {
+                exception = NO_CHANNELS;
+                goto except;
+            }
+
             for (unsigned short i = 0; i < bone_num_channels; i++) {
                 end = _readword(word, WORD_MAX_LEN);  // read channel
 
                 char* channel = (char*) malloc(sizeof(char) * strlen(word));
                 strcpy(channel, word);
-                // printf("JOINT %s CHANNEL %s\n", _hierarchy.back()->name, channel);
+#ifdef DEBUG
+                printf("JOINT %s CHANNEL %s\n", _hierarchy.back()->name, channel);
+#endif
                 _hierarchy.back()->channels.push_back(channel);
 
-                if (end == '\0' || end == '\n')  // no more channels
+                if (end == '\n')  // no more channels
                     break;
+
+                if (end == '\0')  // no more channels
+                    goto finally;
             }
 
         } else if (strcmp(word, "MOTION") == 0) {
-            break;
+            break;  // leave hierarchy
         }
-    }
-    if (end == '\0')  // no motion section
+    }  // HIERARCHY
+    if (end == '\0') {
+        exception = NO_MOTION;
         goto except;
+    }
 
-    end = _readword(word, WORD_MAX_LEN);
     while (end != '\0') {  // MOTION
+        end = _readword(word, WORD_MAX_LEN);
+
         if (strcmp(word, "Frames:") == 0) {
+            if (end == '\0' || end == '\n') {
+                exception = NO_FRAMES;
+                goto except;
+            }
             end = _readword(word, WORD_MAX_LEN);  // read frames count
             num_frames = atol(word);
-            if (end == '\0')  // end of motion section
+#ifdef DEBUG
+            printf("FRAMES %ld\n", num_frames);
+#endif
+            if (end == '\0')
                 goto finally;
 
         } else if (strcmp(word, "Frame") == 0) {
+            if (end == '\0' || end == '\n') {
+                exception = NO_FRAME_TIME;
+                goto except;
+            }
+
             end = _readword(word, WORD_MAX_LEN);  // read next keyword
             if (strcmp(word, "Time:") == 0) {
+                if (end == '\0' || end == '\n') {
+                    exception = NO_FRAME_TIME;
+                    goto except;
+                }
                 end = _readword(word, WORD_MAX_LEN);  // read frame time
                 _frame_time = atof(word);
+#ifdef DEBUG
+                printf("FRAME TIME %.6f\n", _frame_time);
+#endif
+                _frame_time_hns = 10000000L * (unsigned long) _frame_time;
                 if (end == '\0')  // end of motion section
                     goto finally;
             }
@@ -95,14 +151,27 @@ BVHQ::BVHQ(const char* name, const char* data): Animation(name) {
 
         } else if (num_frames) {
             for (unsigned long iframe = 0; iframe < num_frames; iframe++) {
+#ifdef DEBUG
+                printf("FRAME %ld\n", iframe);
+#endif
+
                 Frame* frame = new Frame();
+                unsigned int bi = 0;
 
                 for (BVHQJoint* joint: _hierarchy) {
                     LVecBase3 pos, hpr;
                     LQuaternion quat;
-                    bool has_pos, has_hpr, has_quat;
+                    bool has_pos = false, has_hpr = false, has_quat = false;
+                    unsigned ci = 0;
 
                     for (char* channel: joint->channels) {
+                        if (iframe > 0 || bi > 0 || ci > 0)
+                            end = _readword(word, WORD_MAX_LEN);  // read channel value
+
+#ifdef DEBUG
+                        // printf("CHANNEL %s %s %s\n", joint->name, channel, word);
+#endif
+
                         if (strcmp(channel, "Xposition") == 0) {
                             pos.set_x(atof(word));
                             has_pos = true;
@@ -146,12 +215,8 @@ BVHQ::BVHQ(const char* name, const char* data): Animation(name) {
                             has_quat = true;
                         }
 
-                        if (end == '\0')  // end of frame or motion section
-                            break;  // leave channels
-
-                        end = _readword(word, WORD_MAX_LEN);  // read channel value
-
-                        if (end == '\n')  // end of frame or motion section
+                        ci++;
+                        if (end == '\0' || end == '\n')
                             break;  // leave channels
                     }  // bone channels
 
@@ -174,21 +239,19 @@ BVHQ::BVHQ(const char* name, const char* data): Animation(name) {
                         frame->add_transform(joint->name, transform);
                     }
 
-                    if (end == '\n' || end == '\0')  // end of frame or motion section
+                    bi++;
+                    if (end == '\0' || end == '\n')
                         break;  // leave bones
                 }  // bone
 
                 _motion.push_back(frame);
 
-                if (end == '\0')  // end of motion section
+                if (end == '\0')
                     break;  // leave frames
             }  // frame
-
-            break;
+            break;  // leave motion
         }  // has frames count
-
-        end = _readword(word, WORD_MAX_LEN);
-    }
+    }  // MOTION
 
     goto finally;
 
@@ -197,10 +260,11 @@ BVHQ::BVHQ(const char* name, const char* data): Animation(name) {
 
     finally:
         free(word);
+        vfs->close_read_file(_istream);
+
 }
 
 BVHQ::~BVHQ() {
-    free(_data);
     for (BVHQJoint* joint: _hierarchy) {
         free(joint->name);
         for (char* channel: joint->channels) {
@@ -214,11 +278,19 @@ BVHQ::~BVHQ() {
 
 char BVHQ::_readword(char* word, unsigned long size) {
     unsigned long i = 0;
-    char c;
-    do {
-        c = _data[_offset++];
+    char c = '*';
+
+    while (c != ' ' && c != '\t' && c != '\n' && c != '\0' &&
+           i < size && !_istream->eof()) {
+        _istream->get(c);
         word[i++] = c;
-    } while (c != ' ' && c != '\t' && c != '\n' && c != '\0' && i <= size - 2);
+    }
+
+    if (i == 0) {
+        word[0] = '\0';
+        return '\0';
+    }
+
     word[i - 1] = '\0';
     return c;
 }

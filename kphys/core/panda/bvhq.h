@@ -1,6 +1,7 @@
 #ifndef PANDA_BVHQ_H
 #define PANDA_BVHQ_H
 
+#include "filename.h"
 #include "nodePath.h"
 #include "pvector.h"
 #include "texture.h"
@@ -17,12 +18,11 @@ public:
 
 class EXPORT_CLASS BVHQ: public Animation {
 PUBLISHED:
-    BVHQ(const char* name, const char* data);
+    BVHQ(const char* name, Filename filename);
     ~BVHQ();
 
 private:
-    unsigned long _offset;
-    char* _data;
+    std::istream* _istream;
     pvector<BVHQJoint*> _hierarchy;
 
     char _readword(char* word, unsigned long size);
