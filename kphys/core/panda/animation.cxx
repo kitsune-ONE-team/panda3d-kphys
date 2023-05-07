@@ -23,9 +23,73 @@ unsigned long Animation::get_num_frames() {
 }
 
 Frame* Animation::get_frame(unsigned long i) {
-    return _motion.at(_get_frame_index(i));
+    return _motion[_get_frame_index(i)];
 }
 
+/**
+   The the duration of frame.
+*/
 double Animation::get_frame_time() {
     return _frame_time;
+}
+
+/**
+   The the duration of frame in hundreds of nanoseconds (100ns).
+*/
+unsigned long Animation::get_frame_time_hns() {
+    return _frame_time_hns;
+}
+
+/**
+   Check if another animation can blend in into this animation.
+*/
+bool Animation::can_blend_in() {
+    return _blend_in;
+}
+
+/**
+   Check if this animation can blend out into another animation.
+*/
+bool Animation::can_blend_out() {
+    return _blend_out;
+}
+
+/**
+   Check if this animation is looped.
+*/
+bool Animation::is_loop() {
+    return _is_loop;
+}
+
+/**
+   Check if this is a manually controlled animation,
+   which doesn't adnvance frames by time.
+*/
+bool Animation::is_manual() {
+    return _is_manual;
+}
+
+/**
+   Set animation blending mode.
+   blend_in - another animation can blend in into this animation
+   blend_out - this animation can blend out into another animation
+*/
+void Animation::set_blending_mode(bool blend_in, bool blend_out) {
+    _blend_in = blend_in;
+    _blend_out = blend_out;
+}
+
+/**
+   Set loop mode.
+*/
+void Animation::set_loop(bool loop) {
+    _is_loop = loop;
+}
+
+/**
+   Set manually controlled animation flag for animations,
+   which doesn't adnvance frames by time.
+*/
+void Animation::set_manual(bool manual) {
+    _is_manual = manual;
 }

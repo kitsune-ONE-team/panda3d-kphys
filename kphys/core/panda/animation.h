@@ -1,9 +1,9 @@
 #ifndef PANDA_ANIMATION_H
 #define PANDA_ANIMATION_H
 
-#include "typedReferenceCount.h"
 #include "namable.h"
 #include "pvector.h"
+#include "typedReferenceCount.h"
 
 #include "kphys/core/panda/frame.h"
 
@@ -15,15 +15,28 @@ PUBLISHED:
     Frame* get_frame(unsigned long i);
     unsigned long get_num_frames();
     double get_frame_time();
+    unsigned long get_frame_time_hns();
+    bool can_blend_in();
+    bool can_blend_out();
+    bool is_loop();
+    bool is_manual();
+    void set_blending_mode(bool blend_in, bool blend_out);
+    void set_loop(bool loop);
+    void set_manual(bool manual);
 
 private:
     unsigned long _get_frame_index(long frame);
+    bool _blend_in;
+    bool _blend_out;
+    bool _is_loop;
+    bool _is_manual;
 
     static TypeHandle _type_handle;
 
 protected:
     pvector<Frame*> _motion;
     double _frame_time;
+    unsigned long _frame_time_hns;
 
 public:
     static TypeHandle get_class_type() {
