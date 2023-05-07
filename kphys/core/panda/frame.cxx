@@ -20,13 +20,15 @@ unsigned int Frame::get_num_transforms() {
 }
 
 char* Frame::get_bone_name(unsigned int i) {
-    return _bone_names.at(i);
+    return _bone_names[i];
 }
 
 ConstPointerTo<TransformState> Frame::get_transform(unsigned int i) {
-    return _transforms.at(_bone_names.at(i));
+    return _transforms[_bone_names[i]];
 }
 
 ConstPointerTo<TransformState> Frame::get_transform(char* name) {
-    return _transforms.at(name);
+    if (_transforms.find(name) == _transforms.end())
+        return NULL;
+    return _transforms[name];
 }
