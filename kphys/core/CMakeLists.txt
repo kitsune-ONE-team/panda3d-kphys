@@ -6,6 +6,7 @@ set(CORE_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bone.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bvhq.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/ccdik.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/channel.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/config.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/controller.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/converters.cxx
@@ -25,6 +26,7 @@ set(CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bone.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/bvhq.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/ccdik.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/channel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/config.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/controller.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/converters.h

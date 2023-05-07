@@ -6,6 +6,7 @@
 #include "kphys/core/panda/bone.h"
 #include "kphys/core/panda/bvhq.h"
 #include "kphys/core/panda/ccdik.h"
+#include "kphys/core/panda/channel.h"
 #include "kphys/core/panda/config.h"
 #include "kphys/core/panda/controller.h"
 #include "kphys/core/panda/converters.h"
@@ -30,9 +31,10 @@ void init_libcore() {
         return;
     initialized = true;
 
-    AnimatorNode::init_type();
     Animation::init_type();
+    AnimatorNode::init_type();
     BVHQ::init_type();
+    Channel::init_type();
     Frame::init_type();
 
     ControllerNode::init_type();
