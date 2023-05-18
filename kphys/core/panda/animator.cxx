@@ -22,7 +22,7 @@ void AnimatorNode::add_channel(char* name) {
 /**
    Get an animation channel.
 */
-Channel* AnimatorNode::get_channel(char* name) {
+PointerTo<Channel> AnimatorNode::get_channel(char* name) {
     if (_channels.find(name) == _channels.end())
         return NULL;
     return _channels[name];
@@ -38,7 +38,7 @@ void AnimatorNode::put_animation(char* name, Animation* animation) {
 /**
    Get a reusable animation from the storage;
 */
-Animation* AnimatorNode::get_animation(char* name) {
+PointerTo<Animation> AnimatorNode::get_animation(char* name) {
     if (_animations.find(name) == _animations.end())
         return NULL;
     return _animations[name];

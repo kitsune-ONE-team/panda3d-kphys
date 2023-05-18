@@ -71,7 +71,7 @@ void Channel::set_frame(unsigned short i, double frame) {
     _frames[i] = frame;
 }
 
-Animation* Channel::get_animation(unsigned short i) {
+PointerTo<Animation> Channel::get_animation(unsigned short i) {
     return _animations[i];
 }
 
@@ -82,7 +82,7 @@ Animation* Channel::get_animation(unsigned short i) {
    [A]  [B]
     A -- X
 */
-void Channel::push_animation(Animation* animation) {
+void Channel::push_animation(PointerTo<Animation> animation) {
     _animations[SLOT_B] = animation;
     _frames[SLOT_B] = 0;
 }

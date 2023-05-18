@@ -41,7 +41,7 @@ private:
     LMatrix4Array _bone_init_local;  // initial local-space matrices
     LMatrix4Array _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
     LMatrix4Array _bone_transform;  // current world-space matrices
-    Texture* _bone_transform_tex;
+    PointerTo<Texture> _bone_transform_tex;
     int _frame_transform_indices[MAX_BONES];
     struct ik_solver_t* _ik_solver;  // [IK] solver engine
     static TypeHandle _type_handle;

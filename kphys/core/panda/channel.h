@@ -16,15 +16,15 @@ PUBLISHED:
     void set_blending_time(unsigned long t);
     double get_frame(unsigned short i);
     void set_frame(unsigned short i, double frame);
-    Animation* get_animation(unsigned short i);
-    void push_animation(Animation* animation);
+    PointerTo<Animation> get_animation(unsigned short i);
+    void push_animation(PointerTo<Animation> animation);
     void switch_animation();
     void update(unsigned long dt);
     void include_bone(char* name);
     void exclude_bone(char* name);
 
 private:
-    Animation* _animations[2];
+    PointerTo<Animation> _animations[2];
     unsigned long _frames[2];
     unsigned long _factor;
     unsigned long _blending_time;

@@ -14,14 +14,14 @@ PUBLISHED:
     AnimatorNode(const char* name);
     ~AnimatorNode();
     void add_channel(char* name);
-    Channel* get_channel(char* name);
+    PointerTo<Channel> get_channel(char* name);
     void put_animation(char* name, Animation* animation);
-    Animation* get_animation(char* name);
+    PointerTo<Animation> get_animation(char* name);
 
 private:
     NodePath _armature;
-    pmap<char*, Animation*> _animations;
-    pmap<char*, Channel*> _channels;
+    pmap<char*, PointerTo<Animation>> _animations;
+    pmap<char*, PointerTo<Channel>> _channels;
 
     static TypeHandle _type_handle;
 
