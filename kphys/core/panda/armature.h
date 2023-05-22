@@ -34,7 +34,7 @@ PUBLISHED:
     void update_ik();
     void update_ik(unsigned int priority);
     void update_shader_inputs();
-    void set_frame(Frame* frame);
+    void apply(PointerTo<Frame> frame);
 
 private:
     unsigned int _ik_engine;

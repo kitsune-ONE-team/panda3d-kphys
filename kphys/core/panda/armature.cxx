@@ -226,7 +226,7 @@ void ArmatureNode::sync_ik2p_chains() {
 /**
  * Set animation frame. Modifies bone transforms.
  */
-void ArmatureNode::set_frame(Frame* frame) {
+void ArmatureNode::apply(PointerTo<Frame> frame) {
     NodePath armature = NodePath::any_path(this);
     NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
     for (int i = 0; i < bones.get_num_paths(); i++) {

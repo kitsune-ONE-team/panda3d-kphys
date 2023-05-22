@@ -17,6 +17,7 @@ PUBLISHED:
     PointerTo<Channel> get_channel(char* name);
     void put_animation(char* name, Animation* animation);
     PointerTo<Animation> get_animation(char* name);
+    void apply();
 
 private:
     NodePath _armature;
