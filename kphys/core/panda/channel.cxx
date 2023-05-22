@@ -2,10 +2,6 @@
 
 #include "kphys/core/panda/channel.h"
 
-#define NUM_SLOTS 2
-#define SLOT_A 0
-#define SLOT_B 1
-
 
 unsigned long umin(unsigned long a, unsigned long b) {
     if (a < b)
@@ -63,16 +59,27 @@ void Channel::set_blending_time(unsigned long t) {
     _blending_time = t;
 }
 
-double Channel::get_frame(unsigned short i) {
-    return _frames[i];
+double Channel::get_frame_index(unsigned short slot) {
+    return _frames[slot];
 }
 
-void Channel::set_frame(unsigned short i, double frame) {
-    _frames[i] = frame;
+void Channel::set_frame_index(unsigned short slot, double frame) {
+    _frames[slot] = frame;
 }
 
-PointerTo<Animation> Channel::get_animation(unsigned short i) {
-    return _animations[i];
+/**
+   Returns the closest frame of the animation in the specified slot.
+*/
+PointerTo<Frame> Channel::get_frame(unsigned short slot) {
+    unsigned long i = (unsigned long) round(get_frame_index(slot));
+    return get_animation(slot)->get_frame(i);
+}
+
+/**
+   Returns the animation in the specified slot.
+*/
+PointerTo<Animation> Channel::get_animation(unsigned short slot) {
+    return _animations[slot];
 }
 
 /**
@@ -104,30 +111,28 @@ void Channel::switch_animation() {
 void Channel::update(unsigned long dt) {
     // increment frames
     for (unsigned short i = 0; i < NUM_SLOTS; i++) {
-        if (_animations[i] && _animations[i]->is_manual())
+        if (_animations[i] == NULL || _animations[i]->is_manual())
             continue;
 
-        double frame_delta = dt / _animations[i]->get_frame_time();
+        double frame_delta = dt / _animations[i]->get_frame_time_hns();
         double frame = _frames[i] + frame_delta;
+        double num_frames = (double) _animations[i]->get_num_frames();
 
-        if (_animations[i] && _animations[i]->get_num_frames()) {
-            double num_frames = (double) _animations[i]->get_num_frames();
-            if (_animations[i]->is_loop()) {
-                // num_frames = 100 (frame 0...99)
-                // frame = 100
-                // frame >= 100 -> frame = 100 - 100 = 0
-                while (frame >= num_frames)
-                    frame -= num_frames;
-            } else {
-                frame = fmin(frame, num_frames - 1);
-            }
-            set_frame(i, frame);
+        if (_animations[i]->is_loop()) {
+            // num_frames = 100 (frame 0...99)
+            // frame = 100
+            // frame >= 100 -> frame = 100 - 100 = 0
+            while (frame >= num_frames)
+                frame -= num_frames;
+        } else {
+            frame = fmin(frame, num_frames - 1);
         }
+        set_frame_index(i, frame);
     }
 
-    // update factor
-    if (_animations[SLOT_A] && _animations[SLOT_A]->can_blend_out() &&
-            _animations[SLOT_B] && _animations[SLOT_B]->can_blend_in())
+    // update blending factor
+    if (_animations[SLOT_A] != NULL && _animations[SLOT_A]->can_blend_out() &&
+            _animations[SLOT_B] != NULL && _animations[SLOT_B]->can_blend_in())
         _factor = umin(_factor + dt, _blending_time);
     else  // set to max
         _factor = _blending_time;

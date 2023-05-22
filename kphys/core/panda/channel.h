@@ -7,6 +7,10 @@
 
 #include "kphys/core/panda/animation.h"
 
+#define NUM_SLOTS 2
+#define SLOT_A 0
+#define SLOT_B 1
+
 
 class EXPORT_CLASS Channel: public TypedReferenceCount, public Namable {
 PUBLISHED:
@@ -14,9 +18,10 @@ PUBLISHED:
     ~Channel();
     double get_factor();
     void set_blending_time(unsigned long t);
-    double get_frame(unsigned short i);
-    void set_frame(unsigned short i, double frame);
-    PointerTo<Animation> get_animation(unsigned short i);
+    double get_frame_index(unsigned short slot);
+    void set_frame_index(unsigned short slot, double frame);
+    PointerTo<Frame> get_frame(unsigned short slot);
+    PointerTo<Animation> get_animation(unsigned short slot);
     void push_animation(PointerTo<Animation> animation);
     void switch_animation();
     void update(unsigned long dt);
