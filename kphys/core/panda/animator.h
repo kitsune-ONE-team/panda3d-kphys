@@ -3,6 +3,7 @@
 
 #include "pandaNode.h"
 #include "pmap.h"
+#include "pvector.h"
 #include "nodePath.h"
 
 #include "kphys/core/panda/animation.h"
@@ -13,16 +14,19 @@ class EXPORT_CLASS AnimatorNode: public PandaNode {
 PUBLISHED:
     AnimatorNode(const char* name);
     ~AnimatorNode();
-    void add_channel(char* name);
-    PointerTo<Channel> get_channel(char* name);
-    void put_animation(char* name, Animation* animation);
-    PointerTo<Animation> get_animation(char* name);
+    unsigned int get_num_channels();
+    void add_channel(const char* name);
+    PointerTo<Channel> get_channel(unsigned int i);
+    PointerTo<Channel> get_channel(const char* name);
+    void put_animation(const char* name, Animation* animation);
+    PointerTo<Animation> get_animation(const char* name);
     void apply();
 
 private:
     NodePath _armature;
-    pmap<char*, PointerTo<Animation>> _animations;
-    pmap<char*, PointerTo<Channel>> _channels;
+    pmap<std::string, PointerTo<Animation>> _animations;
+    pvector<std::string> _channel_names;
+    pmap<std::string, PointerTo<Channel>> _channels;
 
     static TypeHandle _type_handle;
 

@@ -223,37 +223,41 @@ void ArmatureNode::sync_ik2p_chains() {
     }
 }
 
+
+NodePath ArmatureNode::find_bone(const char* name) {
+    NodePath armature = NodePath::any_path(this);
+    NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
+    for (int i = 0; i < bones.get_num_paths(); i++) {
+        NodePath np = bones.get_path(i);
+        if (strcmp(np.get_name().c_str(), name) == 0)
+            return np;
+    }
+    return NodePath();
+}
+
 /**
  * Set animation frame. Modifies bone transforms.
  */
 void ArmatureNode::apply(PointerTo<Frame> frame) {
     NodePath armature = NodePath::any_path(this);
-    NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
-    for (int i = 0; i < bones.get_num_paths(); i++) {
-        NodePath np = bones.get_path(i);
-        unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
-        int fti = _frame_transform_indices[bone_id];  // frame transform index
-        unsigned int num_transforms = frame->get_num_transforms();
 
-        if (fti < 0 || strcmp(frame->get_bone_name(fti), np.get_name().c_str()) != 0) {
-            fti = -1;
-            for (unsigned int j = 0; j < num_transforms; j++) {
-                if (strcmp(frame->get_bone_name(j), np.get_name().c_str()) == 0) {
-                    _frame_transform_indices[bone_id] = fti = j;
-                    break;
-                }
-            }
-        }
-
-        if (fti < 0)
+    unsigned int nt = frame->get_num_transforms();
+    for (unsigned int i = 0; i < nt; i++) {
+        const char* name  = frame->get_bone_name(i);
+        NodePath np = find_bone(name);
+        if (np.is_empty())
             continue;
 
-        ConstPointerTo<TransformState> transform = frame->get_transform(fti);
-        if (transform->has_pos())
+        ConstPointerTo<TransformState> transform = frame->get_transform(name);
+        if (transform == NULL)
+            continue;
+
+        unsigned short flags = frame->get_transform_flags(name);
+        if (flags & TRANSFORM_POS)
             np.set_pos(armature, transform->get_pos());
-        if (transform->has_hpr())
+        if (flags & TRANSFORM_HPR)
             np.set_hpr(armature, transform->get_hpr());
-        if (transform->has_quat())
+        if (flags & TRANSFORM_QUAT)
             np.set_quat(armature, transform->get_quat());
     }
 }

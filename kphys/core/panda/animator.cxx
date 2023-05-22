@@ -12,45 +12,60 @@ AnimatorNode::~AnimatorNode() {
     _animations.clear();
 }
 
+unsigned int AnimatorNode::get_num_channels() {
+    return _channels.size();
+}
+
 /**
    Create a new animation channel.
 */
-void AnimatorNode::add_channel(char* name) {
-    _channels[name] = new Channel(name);
+void AnimatorNode::add_channel(const char* name) {
+    std::string s = std::string(name);
+    _channels[s] = new Channel(name);
 }
 
 /**
    Get an animation channel.
 */
-PointerTo<Channel> AnimatorNode::get_channel(char* name) {
-    if (_channels.find(name) == _channels.end())
+PointerTo<Channel> AnimatorNode::get_channel(unsigned int i) {
+    return _channels[_channel_names[i]];
+}
+
+/**
+   Get an animation channel.
+*/
+PointerTo<Channel> AnimatorNode::get_channel(const char* name) {
+    std::string s = std::string(name);
+    if (_channels.find(s) == _channels.end())
         return NULL;
-    return _channels[name];
+    return _channels[s];
 }
 
 /**
    Put a reusable animation in the storage.
 */
-void AnimatorNode::put_animation(char* name, Animation* animation) {
-    _animations[name] = animation;
+void AnimatorNode::put_animation(const char* name, Animation* animation) {
+    std::string s = std::string(name);
+    _animations[s] = animation;
 }
 
 /**
    Get a reusable animation from the storage.
 */
-PointerTo<Animation> AnimatorNode::get_animation(char* name) {
-    if (_animations.find(name) == _animations.end())
+PointerTo<Animation> AnimatorNode::get_animation(const char* name) {
+    std::string s = std::string(name);
+    if (_animations.find(s) == _animations.end())
         return NULL;
-    return _animations[name];
+    return _animations[s];
 }
 
 void AnimatorNode::apply() {
     PointerTo<Frame> frame = NULL;
 
-    pmap<char*, PointerTo<Channel>>::iterator it = _channels.begin();
+    pmap<std::string, PointerTo<Channel>>::iterator it = _channels.begin();
     while (it != _channels.end()) {
-        char* name = it->first;
-        if (strcmp(name, "root") == 0) {
+        std::string name = it->first;
+        if (strcmp(name.c_str(), "root") == 0) {
             PointerTo<Channel> channel = it->second;
             frame = channel->get_frame(SLOT_B);
             break;

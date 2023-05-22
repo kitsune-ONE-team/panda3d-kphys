@@ -30,19 +30,21 @@ Channel::~Channel() {
     _exclude_bones.clear();
 }
 
-void Channel::include_bone(char* name) {
-    if (_exclude_bones.find(name) == _exclude_bones.end()) {
-        _include_bones[name] = true;
+void Channel::include_bone(const char* name) {
+    std::string s = std::string(name);
+    if (_exclude_bones.find(s) == _exclude_bones.end()) {
+        _include_bones[s] = true;
     } else {
-        _exclude_bones.erase(name);
+        _exclude_bones.erase(s);
     }
 }
 
-void Channel::exclude_bone(char* name) {
-    if (_include_bones.find(name) == _include_bones.end()) {
-        _exclude_bones[name] = true;
+void Channel::exclude_bone(const char* name) {
+    std::string s = std::string(name);
+    if (_include_bones.find(s) == _include_bones.end()) {
+        _exclude_bones[s] = true;
     } else {
-        _include_bones.erase(name);
+        _include_bones.erase(s);
     }
 }
 

@@ -25,16 +25,16 @@ PUBLISHED:
     void push_animation(PointerTo<Animation> animation);
     void switch_animation();
     void update(unsigned long dt);
-    void include_bone(char* name);
-    void exclude_bone(char* name);
+    void include_bone(const char* name);
+    void exclude_bone(const char* name);
 
 private:
     PointerTo<Animation> _animations[2];
     unsigned long _frames[2];
     unsigned long _factor;
     unsigned long _blending_time;
-    pmap<char*, bool> _include_bones;
-    pmap<char*, bool> _exclude_bones;
+    pmap<std::string, bool> _include_bones;
+    pmap<std::string, bool> _exclude_bones;
 
     static TypeHandle _type_handle;
 
