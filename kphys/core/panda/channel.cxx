@@ -73,8 +73,12 @@ void Channel::set_frame_index(unsigned short slot, double frame) {
    Returns the closest frame of the animation in the specified slot.
 */
 PointerTo<Frame> Channel::get_frame(unsigned short slot) {
+    PointerTo<Animation> animation = get_animation(slot);
+    if (animation == NULL)
+        return NULL;
+
     unsigned long i = (unsigned long) round(get_frame_index(slot));
-    return get_animation(slot)->get_frame(i);
+    return animation->get_frame(i);
 }
 
 /**
