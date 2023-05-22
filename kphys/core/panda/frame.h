@@ -9,25 +9,37 @@
 
 #include "kphys/core/panda/types.h"
 
+BEGIN_PUBLISH
+enum TransformComponent {
+    TRANSFORM_POS = 1 << 0,
+    TRANSFORM_HPR = 1 << 1,
+    TRANSFORM_QUAT = 1 << 2,
+};
+END_PUBLISH
+
 
 class EXPORT_CLASS Frame: public TypedReferenceCount {
 PUBLISHED:
     Frame();
     ~Frame();
     unsigned int get_num_transforms();
-    char* get_bone_name(unsigned int i);
+    const char* get_bone_name(unsigned int i);
     ConstPointerTo<TransformState> get_transform(unsigned int i);
-    ConstPointerTo<TransformState> get_transform(char* name);
+    ConstPointerTo<TransformState> get_transform(const char* name);
+    unsigned short get_transform_flags(const char* name);
 
 private:
     unsigned long _iframe;
-    pvector<char*> _bone_names;
-    pmap<char*, ConstPointerTo<TransformState>> _transforms;
+    pvector<std::string> _bone_names;
+    pmap<std::string, ConstPointerTo<TransformState>> _transforms;
+    pmap<std::string, unsigned short> _transform_flags;
 
     static TypeHandle _type_handle;
 
 public:
-    void add_transform(char* name, ConstPointerTo<TransformState> transform);
+    void add_transform(
+        const char* name, ConstPointerTo<TransformState> transform,
+        bool has_pos, bool has_hpr, bool has_quat);
 
     static TypeHandle get_class_type() {
         return _type_handle;
