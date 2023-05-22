@@ -12,10 +12,12 @@ class EXPORT_CLASS Animation: public TypedReferenceCount, public Namable {
 PUBLISHED:
     Animation(const char* name);
     ~Animation();
-    Frame* get_frame(unsigned long i);
     unsigned long get_num_frames();
+    PointerTo<Frame> get_frame(unsigned long i);
     double get_frame_time();
     unsigned long get_frame_time_hns();
+    void set_frame_time(double frame_time);
+    void set_frame_time_hns(unsigned long hns);
     bool can_blend_in();
     bool can_blend_out();
     bool is_loop();
@@ -34,7 +36,7 @@ private:
     static TypeHandle _type_handle;
 
 protected:
-    pvector<Frame*> _motion;
+    pvector<PointerTo<Frame>> _motion;
     double _frame_time;
     unsigned long _frame_time_hns;
 
