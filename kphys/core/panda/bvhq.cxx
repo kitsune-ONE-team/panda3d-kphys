@@ -236,7 +236,8 @@ BVHQ::BVHQ(const char* name, Filename filename): Animation(name) {
                         transform = TransformState::make_quat(quat);
 
                     if (transform != NULL) {
-                        frame->add_transform(joint->name, transform);
+                        frame->add_transform(
+                            joint->name, transform, has_pos, has_hpr, has_quat);
                     }
 
                     bi++;
