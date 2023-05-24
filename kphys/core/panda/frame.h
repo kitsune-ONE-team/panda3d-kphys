@@ -27,6 +27,7 @@ PUBLISHED:
     ConstPointerTo<TransformState> get_transform(unsigned int i);
     ConstPointerTo<TransformState> get_transform(const char* name);
     unsigned short get_transform_flags(const char* name);
+    PointerTo<Frame> mix(PointerTo<Frame> frame_b, double factor);
 
 private:
     unsigned long _iframe;
@@ -37,6 +38,9 @@ private:
     static TypeHandle _type_handle;
 
 public:
+    void add_transform(
+        const char* name, ConstPointerTo<TransformState> transform,
+        unsigned short flags);
     void add_transform(
         const char* name, ConstPointerTo<TransformState> transform,
         bool has_pos, bool has_hpr, bool has_quat);

@@ -67,7 +67,14 @@ void AnimatorNode::apply() {
         std::string name = it->first;
         if (strcmp(name.c_str(), "root") == 0) {
             PointerTo<Channel> channel = it->second;
-            frame = channel->get_frame(SLOT_B);
+            PointerTo<Frame> frame_a = channel->get_frame(SLOT_A);
+            PointerTo<Frame> frame_b = channel->get_frame(SLOT_B);
+            if (frame_a != NULL && frame_b == NULL)
+                frame = frame_a;
+            else if (frame_a == NULL && frame_b != NULL)
+                frame = frame_b;
+            else if (frame_a != NULL && frame_b != NULL)
+                frame = frame_a->mix(frame_b, channel->get_factor());
             break;
         }
         it++;
