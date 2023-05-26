@@ -1,8 +1,6 @@
-#ifndef PANDA_SPRING_H
-#define PANDA_SPRING_H
-
 #ifdef CPPPARSER  // interrogate
 #include <btBulletDynamicsCommon.h>  // panda3d parser-inc
+class btGeneric6DofSpring2Constraint;
 #else  // normal compiler
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
 #endif
@@ -14,43 +12,16 @@
 #define M_PI 3.14159265358979323846264338327
 #endif
 
-/* #define USE_SPRING_V2 1  // use version 2 of spring constraint */
 
-
-BEGIN_PUBLISH
-enum DOF {  // Degree Of Freedom types:
-    DOF_TX = 0,  // translation along X axis
-    DOF_TY = 1,  // translation along Y axis
-    DOF_TZ = 2,  // translation along Z axis
-    DOF_RX = 3,  // rotation around X axis
-    DOF_RY = 4,  // rotation around Y axis
-    DOF_RZ = 5   // rotation around Z axis
-};
-END_PUBLISH
-
-#ifdef USE_SPRING_V2
-BEGIN_PUBLISH
-enum RotateOrder {
-    RO_XYZ = 0,
-    RO_XZY = 1,
-    RO_YXZ = 2,
-    RO_YZX = 3,
-    RO_ZXY = 4,
-    RO_ZYX = 5
-};
-END_PUBLISH
-#endif
-
-
-class EXPORT_CLASS SpringConstraint: public BulletConstraint {
+class EXPORT_CLASS SPRING_CONSTRAINT: public BulletConstraint {
 PUBLISHED:
-    SpringConstraint(
+    SPRING_CONSTRAINT(
         const BulletRigidBodyNode* node_a,
         const BulletRigidBodyNode* node_b,
         const TransformState* frame_a,
         const TransformState* frame_b,
         bool use_frame_a_ref);
-    ~SpringConstraint() {
+    ~SPRING_CONSTRAINT() {
         delete _constraint;
     }
 
@@ -103,5 +74,3 @@ public:
         return get_class_type();
     }
 };
-
-#endif

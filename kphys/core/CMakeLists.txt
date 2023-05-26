@@ -14,7 +14,8 @@ set(CORE_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/frame.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/hitbox.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/ik.cxx
-  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v1.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v2.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/types.cxx
 )
 
@@ -34,7 +35,8 @@ set(CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/frame.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/hitbox.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/ik.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v1.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v2.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/types.h
 )
 
