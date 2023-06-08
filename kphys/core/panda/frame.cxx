@@ -83,6 +83,11 @@ unsigned short Frame::get_transform_flags(const char* name) {
 }
 
 PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
+    if (factor == 0)
+        return this;
+    else if (factor == 1)
+        return frame_b;
+
     PointerTo<Frame> frame = new Frame();
 
     unsigned int size = get_num_transforms();

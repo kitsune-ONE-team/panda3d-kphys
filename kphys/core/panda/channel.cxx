@@ -48,6 +48,35 @@ void Channel::exclude_bone(const char* name) {
     }
 }
 
+unsigned int Channel::get_num_included_bones() {
+    return _include_bones.size();
+}
+
+unsigned int Channel::get_num_excluded_bones() {
+    return _exclude_bones.size();
+}
+
+bool Channel::is_bone_included(const char* name) {
+    std::string s = std::string(name);
+    if (_include_bones.find(s) == _include_bones.end())
+        return false;
+    return true;
+}
+
+bool Channel::is_bone_excluded(const char* name) {
+    std::string s = std::string(name);
+    if (_exclude_bones.find(s) == _exclude_bones.end())
+        return false;
+    return true;
+}
+
+bool Channel::is_bone_enabled(const char* name) {
+    if (get_num_included_bones())  // whitelist
+        return is_bone_included(name);
+    else  // blacklist
+        return !is_bone_excluded(name);
+}
+
 /**
    Returns factor of blending.
    0 -> A = 100%, B =   0%
@@ -120,7 +149,10 @@ void Channel::update(unsigned long dt) {
         if (_animations[i] == NULL || _animations[i]->is_manual())
             continue;
 
-        double frame_delta = dt / _animations[i]->get_frame_time_hns();
+        if (i == SLOT_A && _factor >= _blending_time)
+            continue;
+
+        double frame_delta = (double) dt / (double) _animations[i]->get_frame_time_hns();
         double frame = _frames[i] + frame_delta;
         double num_frames = (double) _animations[i]->get_num_frames();
 

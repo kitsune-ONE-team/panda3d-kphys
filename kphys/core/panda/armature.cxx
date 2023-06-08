@@ -19,6 +19,11 @@ ArmatureNode::ArmatureNode(const char* name):
         RGBA_MAT4_SIZE * MAX_BONES, Texture::T_float,
         Texture::F_rgba32, GeomEnums::UH_static);
 
+    _bone_prev_transform_tex = new Texture();
+    _bone_prev_transform_tex->setup_buffer_texture(
+        RGBA_MAT4_SIZE * MAX_BONES, Texture::T_float,
+        Texture::F_rgba32, GeomEnums::UH_static);
+
     for (unsigned int i = 0; i < MAX_BONES; i++)
         _frame_transform_indices[i] = -1;
 }
@@ -26,16 +31,13 @@ ArmatureNode::ArmatureNode(const char* name):
 ArmatureNode::~ArmatureNode() {
     if (_ik_solver != NULL)
         ik.solver.destroy(_ik_solver);
-
-    // _bone_transform_tex->release_all();
-    // _bone_transform_tex->clear_ram_image();
-    // _bone_transform_tex->clear();
-    // delete _bone_transform_tex;
+    _bones.clear();
 }
 
 void ArmatureNode::cleanup() {
     NodePath armature = NodePath::any_path(this);
     armature.clear_shader_input("bone_transform_tex");
+    armature.clear_shader_input("bone_prev_transform_tex");
 }
 
 void ArmatureNode::reset() {
@@ -120,9 +122,14 @@ void ArmatureNode::update_ik(unsigned int priority) {
  */
 void ArmatureNode::update_shader_inputs() {
     NodePath armature = NodePath::any_path(this);
+
+    PTA_uchar data = _bone_prev_transform_tex->modify_ram_image();
+    memcpy(data.p(), _bone_transform.data, sizeof(_bone_transform.data));
+    armature.set_shader_input("bone_prev_transform_tex", _bone_prev_transform_tex);
+
     _update_matrices(armature, LMatrix4::ident_mat(), 1);
 
-    PTA_uchar data = _bone_transform_tex->modify_ram_image();
+    data = _bone_transform_tex->modify_ram_image();
     memcpy(data.p(), _bone_transform.data, sizeof(_bone_transform.data));
     armature.set_shader_input("bone_transform_tex", _bone_transform_tex);
 }
@@ -225,13 +232,22 @@ void ArmatureNode::sync_ik2p_chains() {
 
 
 NodePath ArmatureNode::find_bone(const char* name) {
+    std::string s = std::string(name);
+    if (_bones.find(s) != _bones.end())
+        return _bones[s];
+
     NodePath armature = NodePath::any_path(this);
     NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
     for (int i = 0; i < bones.get_num_paths(); i++) {
         NodePath np = bones.get_path(i);
         if (strcmp(np.get_name().c_str(), name) == 0)
+            // _bones[s] = np;
             return np;
     }
+
+    // _bones[s] = NodePath();
+    // return _bones[s];
+
     return NodePath();
 }
 
@@ -254,10 +270,10 @@ void ArmatureNode::apply(PointerTo<Frame> frame) {
 
         unsigned short flags = frame->get_transform_flags(name);
         if (flags & TRANSFORM_POS)
-            np.set_pos(armature, transform->get_pos());
+            np.set_pos(transform->get_pos());
         if (flags & TRANSFORM_HPR)
-            np.set_hpr(armature, transform->get_hpr());
+            np.set_hpr(transform->get_hpr());
         if (flags & TRANSFORM_QUAT)
-            np.set_quat(armature, transform->get_quat());
+            np.set_quat(transform->get_quat());
     }
 }

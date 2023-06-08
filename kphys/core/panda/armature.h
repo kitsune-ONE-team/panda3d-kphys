@@ -3,6 +3,7 @@
 
 #include "nodePath.h"
 #include "pandaNode.h"
+#include "pmap.h"
 #include "texture.h"
 
 #ifdef CPPPARSER  // interrogate
@@ -18,8 +19,8 @@ union LMatrix4Array;
 
 BEGIN_PUBLISH
 enum IK_ENGINE {
-    IK_ENGINE_IK = 0,  // https://github.com/TheComet/ik
-    IK_ENGINE_CCDIK = 1  // https://github.com/Germanunkol/CCD-IK-Panda3D
+    IK_ENGINE_IK = 0,     // https://github.com/TheComet/ik
+    IK_ENGINE_CCDIK = 1,  // https://github.com/Germanunkol/CCD-IK-Panda3D
 };
 END_PUBLISH
 
@@ -42,7 +43,9 @@ private:
     LMatrix4Array _bone_init_local;  // initial local-space matrices
     LMatrix4Array _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
     LMatrix4Array _bone_transform;  // current world-space matrices
+    pmap<std::string, NodePath> _bones;
     PointerTo<Texture> _bone_transform_tex;
+    PointerTo<Texture> _bone_prev_transform_tex;
     int _frame_transform_indices[MAX_BONES];
     struct ik_solver_t* _ik_solver;  // [IK] solver engine
     static TypeHandle _type_handle;

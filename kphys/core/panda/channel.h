@@ -27,6 +27,11 @@ PUBLISHED:
     void update(unsigned long dt);
     void include_bone(const char* name);
     void exclude_bone(const char* name);
+    unsigned int get_num_included_bones();
+    unsigned int get_num_excluded_bones();
+    bool is_bone_included(const char* name);
+    bool is_bone_excluded(const char* name);
+    bool is_bone_enabled(const char* name);
 
 private:
     PointerTo<Animation> _animations[2];

@@ -3,7 +3,12 @@
 
 TypeHandle Animation::_type_handle;
 
-Animation::Animation(const char* name): Namable(name) {}
+Animation::Animation(const char* name): Namable(name) {
+    _blend_in = true;
+    _blend_out = true;
+    _is_loop = true;
+    _is_manual = false;
+}
 
 Animation::~Animation() {
     _motion.clear();
