@@ -1,6 +1,7 @@
 #include "kphys/core/panda/spring_v2.h"
 
 #define SPRING_CONSTRAINT Spring2Constraint
+#define SPRING_CONSTRAINT_NAME "Spring2Constraint"
 #define USE_SPRING_V2 1
 #include "kphys/core/panda/spring.cxx"
 
@@ -33,4 +34,5 @@ void SPRING_CONSTRAINT::set_max_motor_force(int dof, double value) {
 }
 
 #undef SPRING_CONSTRAINT
+#undef SPRING_CONSTRAINT_NAME
 #undef USE_SPRING_V2

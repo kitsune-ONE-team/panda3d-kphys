@@ -63,7 +63,12 @@ public:
     static void init_type() {
         BulletConstraint::init_type();
         register_type(
-            _type_handle, "SpringConstraint",
+            _type_handle,
+#ifdef USE_SPRING_V2
+            "Spring2Constraint",
+#else
+            "SpringConstraint",
+#endif
             BulletConstraint::get_class_type());
     }
     virtual TypeHandle get_type() const {
