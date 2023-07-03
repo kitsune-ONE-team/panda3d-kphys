@@ -1,3 +1,6 @@
+#ifndef PANDA_SPRING_H
+#define PANDA_SPRING_H
+
 #ifdef CPPPARSER  // interrogate
 #include <btBulletDynamicsCommon.h>  // panda3d parser-inc
 class btGeneric6DofSpring2Constraint;
@@ -13,15 +16,15 @@ class btGeneric6DofSpring2Constraint;
 #endif
 
 
-class EXPORT_CLASS SPRING_CONSTRAINT: public BulletConstraint {
+class EXPORT_CLASS SpringConstraint: public BulletConstraint {
 PUBLISHED:
-    SPRING_CONSTRAINT(
+    SpringConstraint(
         const BulletRigidBodyNode* node_a,
         const BulletRigidBodyNode* node_b,
         const TransformState* frame_a,
         const TransformState* frame_b,
         bool use_frame_a_ref);
-    ~SPRING_CONSTRAINT() {
+    ~SpringConstraint() {
         delete _constraint;
     }
 
@@ -79,3 +82,5 @@ public:
         return get_class_type();
     }
 };
+
+#endif

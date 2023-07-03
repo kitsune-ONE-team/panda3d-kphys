@@ -14,8 +14,9 @@
 #include "kphys/core/panda/frame.h"
 #include "kphys/core/panda/hitbox.h"
 #include "kphys/core/panda/ik.h"
+#include "kphys/core/panda/spring.h"
 #include "kphys/core/panda/spring_v1.h"
-#include "kphys/core/panda/spring_v2.h"
+// #include "kphys/core/panda/spring_v2.h"
 #include "kphys/core/panda/types.h"
 
 
@@ -41,7 +42,7 @@ void init_libcore() {
     ControllerNode::init_type();
     HitboxNode::init_type();
     SpringConstraint::init_type();
-    Spring2Constraint::init_type();
+    // Spring2Constraint::init_type();
 
     ArmatureNode::init_type();
     BoneNode::init_type();

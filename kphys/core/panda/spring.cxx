@@ -1,6 +1,9 @@
-TypeHandle SPRING_CONSTRAINT::_type_handle;
+#ifndef PANDA_SPRING_CXX
+#define PANDA_SPRING_CXX
 
-SPRING_CONSTRAINT::SPRING_CONSTRAINT(
+TypeHandle SpringConstraint::_type_handle;
+
+SpringConstraint::SpringConstraint(
         const BulletRigidBodyNode* node_a,
         const BulletRigidBodyNode* node_b,
         const TransformState* frame_a,
@@ -22,15 +25,15 @@ SPRING_CONSTRAINT::SPRING_CONSTRAINT(
 #endif
 }
 
-void SPRING_CONSTRAINT::set_spring(int dof, bool enabled) {
+void SpringConstraint::set_spring(int dof, bool enabled) {
     _constraint->enableSpring(dof, enabled);
 }
 
-void SPRING_CONSTRAINT::set_stiffness(int dof, double value) {
+void SpringConstraint::set_stiffness(int dof, double value) {
     _constraint->setStiffness(dof, (btScalar) value);
 }
 
-void SPRING_CONSTRAINT::set_damping(int dof, double value) {
+void SpringConstraint::set_damping(int dof, double value) {
     _constraint->setDamping(dof, (btScalar) value);
 }
 
@@ -46,7 +49,7 @@ void SPRING_CONSTRAINT::set_damping(int dof, double value) {
  * :param max: max value (in degrees for rotation angles)
  * :type max: double
  */
-void SPRING_CONSTRAINT::set_limit(int dof, double min, double max) {
+void SpringConstraint::set_limit(int dof, double min, double max) {
     if (dof < 3) {  // translation
         _constraint->setLimit(dof, (btScalar) min, (btScalar) max);
     } else {  // rotation - degrees to radians
@@ -55,10 +58,12 @@ void SPRING_CONSTRAINT::set_limit(int dof, double min, double max) {
     }
 }
 
-void SPRING_CONSTRAINT::set_equilibrium_point(int dof) {
+void SpringConstraint::set_equilibrium_point(int dof) {
     _constraint->setEquilibriumPoint(dof);
 }
 
-void SPRING_CONSTRAINT::set_equilibrium_point(int dof, double value) {
+void SpringConstraint::set_equilibrium_point(int dof, double value) {
     _constraint->setEquilibriumPoint(dof, (btScalar) value);
 }
+
+#endif

@@ -18,8 +18,8 @@ enum SpringDOF {  // Degree Of Freedom types:
 END_PUBLISH
 #endif
 
-#define SPRING_CONSTRAINT SpringConstraint
-#include "kphys/core/panda/spring.h"
-#undef SPRING_CONSTRAINT
+/* #define SpringConstraint SpringConstraint */
+/* #include "kphys/core/panda/spring.h" */
+/* #undef SpringConstraint */
 
 #endif

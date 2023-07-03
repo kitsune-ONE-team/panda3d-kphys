@@ -1,7 +1,6 @@
 #include "kphys/core/panda/spring_v1.h"
+#include "kphys/core/panda/spring.h"
 
-#define SPRING_CONSTRAINT SpringConstraint
-#define SPRING_CONSTRAINT_NAME "Spring2Constraint"
+// #define SpringConstraint SpringConstraint
 #include "kphys/core/panda/spring.cxx"
-#undef SPRING_CONSTRAINT
-#undef SPRING_CONSTRAINT_NAME
+// #undef SpringConstraint
