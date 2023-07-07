@@ -40,9 +40,9 @@ PUBLISHED:
 
 private:
     unsigned int _ik_engine;
-    LMatrix4Array _bone_init_local;  // initial local-space matrices
-    LMatrix4Array _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
-    LMatrix4Array _bone_transform;  // current world-space matrices
+    LMatrix4Array* _bone_init_local;  // initial local-space matrices
+    LMatrix4Array* _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
+    LMatrix4Array* _bone_transform;  // current world-space matrices
     pmap<std::string, NodePath> _bones;
     PointerTo<Texture> _bone_transform_tex;
     PointerTo<Texture> _bone_prev_transform_tex;

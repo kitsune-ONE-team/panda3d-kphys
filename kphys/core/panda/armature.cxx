@@ -14,6 +14,11 @@ ArmatureNode::ArmatureNode(const char* name):
         PandaNode(name),
         _ik_engine(-1),
         _ik_solver(NULL) {
+
+    _bone_init_local = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
+    _bone_init_inv = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
+    _bone_transform = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
+
     _bone_transform_tex = new Texture();
     _bone_transform_tex->setup_buffer_texture(
         RGBA_MAT4_SIZE * MAX_BONES, Texture::T_float,
@@ -32,6 +37,10 @@ ArmatureNode::~ArmatureNode() {
     if (_ik_solver != NULL)
         ik.solver.destroy(_ik_solver);
     _bones.clear();
+
+    free(_bone_init_local);
+    free(_bone_init_inv);
+    free(_bone_transform);
 }
 
 void ArmatureNode::cleanup() {
@@ -124,13 +133,13 @@ void ArmatureNode::update_shader_inputs() {
     NodePath armature = NodePath::any_path(this);
 
     PTA_uchar data = _bone_prev_transform_tex->modify_ram_image();
-    memcpy(data.p(), _bone_transform.data, sizeof(_bone_transform.data));
+    memcpy(data.p(), _bone_transform->data, sizeof(_bone_transform->data));
     armature.set_shader_input("bone_prev_transform_tex", _bone_prev_transform_tex);
 
     _update_matrices(armature, LMatrix4::ident_mat(), 1);
 
     data = _bone_transform_tex->modify_ram_image();
-    memcpy(data.p(), _bone_transform.data, sizeof(_bone_transform.data));
+    memcpy(data.p(), _bone_transform->data, sizeof(_bone_transform->data));
     armature.set_shader_input("bone_transform_tex", _bone_transform_tex);
 }
 

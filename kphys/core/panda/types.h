@@ -13,12 +13,12 @@
 
 
 typedef union LMatrix4Array {
-    float matrices[MAX_BONES][4 * 4];
+    LMatrix4 matrices[MAX_BONES];
     unsigned char data[MAT4_SIZE * MAX_BONES];
 } LMatrix4Array;
 
-LMatrix4 get_matrix(LMatrix4Array array, unsigned short i);
-void set_matrix(LMatrix4Array array, unsigned short i, LMatrix4 matrix);
+LMatrix4 get_matrix(LMatrix4Array* array, unsigned short i);
+void set_matrix(LMatrix4Array* array, unsigned short i, LMatrix4 matrix);
 int is_armature(NodePath np);
 int is_bone(NodePath np);
 int is_effector(NodePath np);
