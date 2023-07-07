@@ -55,7 +55,7 @@ void ArmatureNode::reset() {
     for (int i = 0; i < bones.get_num_paths(); i++) {
         NodePath np = bones.get_path(i);
         unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
-        np.set_mat(_bone_init_local.matrices[bone_id]);
+        np.set_mat(get_matrix(_bone_init_local, bone_id));
     }
 
     // restore effectors
@@ -147,11 +147,13 @@ void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, bool is_cu
 
         if (is_current) {  // current matrices
             // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_020_Skins.md#the-joint-matrices
-            _bone_transform.matrices[bone_id] = _bone_init_inv.matrices[bone_id] * mat;
+            set_matrix(_bone_transform, bone_id, get_matrix(_bone_init_inv, bone_id) * mat);
 
         } else {  // initial matrices
-            _bone_init_local.matrices[bone_id] = np.get_mat();
-            _bone_init_inv.matrices[bone_id].invert_from(mat);
+            set_matrix(_bone_init_local, bone_id, np.get_mat());
+            LMatrix4 inv_mat;
+            inv_mat.invert_from(mat);
+            set_matrix(_bone_init_inv, bone_id, inv_mat);
         }
     }
 
