@@ -45,7 +45,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_command(
   OUTPUT core.in core_igate.cpp
-  COMMAND interrogate -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L
+  COMMAND ${INTERROGATE} -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L
   -I${CMAKE_SOURCE_DIR}
   -I${PANDA_INCLUDE_DIR}/panda3d
   -S${CMAKE_SOURCE_DIR}
@@ -59,7 +59,7 @@ add_custom_command(
 
 add_custom_command(
   OUTPUT core_module.cpp
-  COMMAND interrogate_module
+  COMMAND ${INTERROGATE_MODULE}
   -oc core_module.cpp
   -module core -library core
   -python-native
