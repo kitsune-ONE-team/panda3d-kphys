@@ -22,7 +22,7 @@ if(EXISTS "${BULLET_LIBRARY_DIR}")
 else()
   find_package(Bullet REQUIRED)
 endif()
-include_directories(${BULLET_INCLUDE_DIR})
+include_directories(${BULLET_INCLUDE_DIR}/bullet)
 
 set(IK_PATH thirdparty/ik)
 set(IK_LIB_TYPE "STATIC" CACHE STRING "SHARED or STATIC library" FORCE)
