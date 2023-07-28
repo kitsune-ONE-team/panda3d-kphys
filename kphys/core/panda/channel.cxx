@@ -79,7 +79,7 @@ bool Channel::is_bone_enabled(const char* name) {
 
 /**
    Returns factor of blending.
-   0 -> A = 100%, B =   0%
+   0   -> A = 100%, B =   0%
    100 -> A =   0%, B = 100%
 */
 double Channel::get_factor() {
@@ -99,15 +99,24 @@ void Channel::set_frame_index(unsigned short slot, double frame) {
 }
 
 /**
-   Returns the closest frame of the animation in the specified slot.
+   Returns animation frame from the specified slot.
 */
-PointerTo<Frame> Channel::get_frame(unsigned short slot) {
+PointerTo<Frame> Channel::get_frame(unsigned short slot, bool interpolate) {
     PointerTo<Animation> animation = get_animation(slot);
     if (animation == NULL)
         return NULL;
 
-    unsigned long i = (unsigned long) round(get_frame_index(slot));
-    return animation->get_frame(i);
+    if (interpolate) {
+        double index = get_frame_index(slot);
+        unsigned long i = (unsigned long) floor(index);
+        unsigned long j = (unsigned long) ceil(index);
+        PointerTo<Frame> frame_i = animation->get_frame(i);
+        PointerTo<Frame> frame_j = animation->get_frame(j);
+        return frame_i->mix(frame_j, fmod(index, 1));  // index % 1
+    } else {
+        unsigned long i = (unsigned long) round(get_frame_index(slot));
+        return animation->get_frame(i);
+    }
 }
 
 /**

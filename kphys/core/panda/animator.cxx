@@ -63,39 +63,38 @@ PointerTo<Animation> AnimatorNode::get_animation(const char* name) {
 }
 
 void AnimatorNode::apply() {
-    PointerTo<Frame> frames[NUM_SLOTS];
-    for (unsigned int i = 0; i < NUM_SLOTS; i++)
-        frames[i] = new Frame();
-    double factor = 0;
+    PointerTo<Frame> frame = new Frame();
 
     unsigned int csize = get_num_channels();
     for (unsigned int c = 0; c < csize; c++) {
         PointerTo<Channel> channel = get_channel(c);
 
-        for (unsigned int s = 0; s < NUM_SLOTS; s++) {
-            PointerTo<Frame> frame = channel->get_frame(s);
-            if (frame == NULL)
+        PointerTo<Frame> frame_a = channel->get_frame(SLOT_A);
+        PointerTo<Frame> frame_b = channel->get_frame(SLOT_B);
+        PointerTo<Frame> frame_c;
+        if (frame_a != NULL && frame_b != NULL)
+            frame_c = frame_a->mix(frame_b, channel->get_factor());
+        else if (frame_a == NULL && frame_b != NULL)
+            frame_c = frame_b;
+        else if (frame_a != NULL && frame_b == NULL)
+            frame_c = frame_a;
+        else
+            continue;
+
+        unsigned int bsize = frame_c->get_num_transforms();
+        for (unsigned int b = 0; b < bsize; b++) {
+            const char* bone_name = frame_c->get_bone_name(b);
+            if (!channel->is_bone_enabled(bone_name))
                 continue;
 
-            factor = channel->get_factor();
+            if (frame->get_transform(bone_name) != NULL)
+                continue;
 
-            unsigned int bsize = frame->get_num_transforms();
-            for (unsigned int b = 0; b < bsize; b++) {
-                const char* bone_name = frame->get_bone_name(b);
-                if (!channel->is_bone_enabled(bone_name))
-                    continue;
-
-                if (frames[s]->get_transform(bone_name) != NULL)
-                    continue;
-
-                ConstPointerTo<TransformState> transform = frame->get_transform(bone_name);
-                unsigned short flags = frame->get_transform_flags(bone_name);
-                frames[s]->add_transform(bone_name, transform, flags);
-            }
+            ConstPointerTo<TransformState> transform = frame_c->get_transform(bone_name);
+            unsigned short flags = frame_c->get_transform_flags(bone_name);
+            frame->add_transform(bone_name, transform, flags);
         }
     }
-
-    PointerTo<Frame> frame = frames[SLOT_A]->mix(frames[SLOT_B], factor);
 
     NodePath animator = NodePath::any_path(this);
     NodePathCollection armatures = animator.find_all_matches("**/+ArmatureNode");
