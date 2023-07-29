@@ -8,9 +8,16 @@
 #include "kphys/core/panda/animation.h"
 
 #define NUM_SLOTS 2
-#define SLOT_A 0
-#define SLOT_B 1
+/* #define SLOT_A 0 */
+/* #define SLOT_B 1 */
 
+
+BEGIN_PUBLISH
+enum SLOT {
+    SLOT_A = 0,
+    SLOT_B = 1,
+};
+END_PUBLISH
 
 class EXPORT_CLASS Channel: public TypedReferenceCount, public Namable {
 PUBLISHED:
@@ -20,7 +27,6 @@ PUBLISHED:
     void set_blending_time(double t);
     double get_frame_index(unsigned short slot);
     void set_frame_index(unsigned short slot, double frame);
-    PointerTo<Frame> get_frame(bool interpolate=true);
     PointerTo<Frame> get_frame(unsigned short slot, bool interpolate=true);
     PointerTo<Animation> get_animation(unsigned short slot);
     void push_animation(PointerTo<Animation> animation);

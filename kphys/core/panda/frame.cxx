@@ -1,4 +1,5 @@
 #include "kphys/core/panda/frame.h"
+#include "kphys/core/panda/channel.h"
 
 
 TypeHandle Frame::_type_handle;
@@ -37,6 +38,9 @@ Frame::~Frame() {
 void Frame::add_transform(
         const char* name, ConstPointerTo<TransformState> transform,
         unsigned short flags) {
+    if (get_transform(name) != NULL)
+        return;
+
     std::string s = std::string(name);
     _bone_names.push_back(s);
     _transforms[s] = transform;
@@ -65,7 +69,8 @@ const char* Frame::get_bone_name(unsigned int i) {
 }
 
 ConstPointerTo<TransformState> Frame::get_transform(unsigned int i) {
-    return _transforms[_bone_names[i]];
+    const char* bone_name = get_bone_name(i);
+    return get_transform(bone_name);
 }
 
 ConstPointerTo<TransformState> Frame::get_transform(const char* name) {
@@ -83,65 +88,79 @@ unsigned short Frame::get_transform_flags(const char* name) {
 }
 
 PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
-    if (factor == 0)
+    if (factor <= 0.0)
         return this;
-    else if (factor == 1)
+    else if (factor >= 1.0)
         return frame_b;
 
     PointerTo<Frame> frame = new Frame();
 
-    unsigned int size = get_num_transforms();
-    for (unsigned int i = 0; i < size; i++) {
-        const char* bone_name = get_bone_name(i);
+    for (unsigned int s = 0; s < NUM_SLOTS; s++) {
+        unsigned int bsize;
+        if (s == SLOT_A)
+            bsize = get_num_transforms();
+        else
+            bsize = frame_b->get_num_transforms();
 
-        ConstPointerTo<TransformState> transform_a = get_transform(bone_name);
-        ConstPointerTo<TransformState> transform_b = frame_b->get_transform(bone_name);
-        unsigned short flags_a = get_transform_flags(bone_name);
-        unsigned short flags_b = frame_b->get_transform_flags(bone_name);
-        unsigned short flags = flags_a & flags_b;
+        for (unsigned int b = 0; b < bsize; b++) {
+            const char* bone_name;
+            if (s == SLOT_A)
+                bone_name = get_bone_name(b);
+            else
+                bone_name = frame_b->get_bone_name(b);
 
-        if (transform_a != NULL, transform_b == NULL) {
-            frame->add_transform(bone_name, transform_a, flags_a);
+            if (frame->get_transform(bone_name) != NULL)
+                continue;
 
-        } else if (transform_a == NULL, transform_b != NULL) {
-            frame->add_transform(bone_name, transform_b, flags_b);
+            ConstPointerTo<TransformState> transform_a = get_transform(bone_name);
+            ConstPointerTo<TransformState> transform_b = frame_b->get_transform(bone_name);
+            unsigned short flags_a = get_transform_flags(bone_name);
+            unsigned short flags_b = frame_b->get_transform_flags(bone_name);
+            unsigned short flags = flags_a & flags_b;
 
-        } else if (transform_a != NULL, transform_b != NULL) {
-            LVecBase3 pos, hpr;
-            LQuaternion quat;
-            bool has_pos = false, has_hpr = false, has_quat = false;
+            if (transform_a != NULL && transform_b == NULL) {
+                frame->add_transform(bone_name, transform_a, flags_a);
 
-            if (flags & TRANSFORM_POS) {
-                pos = mix3(transform_a->get_pos(), transform_b->get_pos(), factor);
-                has_pos = true;
-            }
-            if (flags & TRANSFORM_HPR) {
-                hpr = mix3(transform_a->get_hpr(), transform_b->get_hpr(), factor);
-                has_hpr = true;
-            }
-            if (flags & TRANSFORM_QUAT) {
-                quat = mixq(transform_a->get_quat(), transform_b->get_quat(), factor);
-                has_quat = true;
-            }
+            } else if (transform_a == NULL && transform_b != NULL) {
+                frame->add_transform(bone_name, transform_b, flags_b);
 
-            ConstPointerTo<TransformState> transform = NULL;
+            } else if (transform_a != NULL && transform_b != NULL) {
+                LVecBase3 pos, hpr;
+                LQuaternion quat;
+                bool has_pos = false, has_hpr = false, has_quat = false;
 
-            if (has_pos && has_hpr && !has_quat)
-                transform = TransformState::make_pos_hpr(pos, hpr);
-            else if (has_pos && !has_hpr && has_quat)
-                // there is no make_pos_quat() method
-                transform = TransformState::make_pos_quat_scale(
-                    pos, quat, LVecBase3(1, 1, 1));
-            else if (has_pos && !has_hpr && !has_quat)
-                transform = TransformState::make_pos(pos);
-            else if (!has_pos && has_hpr && !has_quat)
-                transform = TransformState::make_hpr(hpr);
-            else if (!has_pos && !has_hpr && has_quat)
-                transform = TransformState::make_quat(quat);
+                if (flags & TRANSFORM_POS) {
+                    pos = mix3(transform_a->get_pos(), transform_b->get_pos(), factor);
+                    has_pos = true;
+                }
+                if (flags & TRANSFORM_HPR) {
+                    hpr = mix3(transform_a->get_hpr(), transform_b->get_hpr(), factor);
+                    has_hpr = true;
+                }
+                if (flags & TRANSFORM_QUAT) {
+                    quat = mixq(transform_a->get_quat(), transform_b->get_quat(), factor);
+                    has_quat = true;
+                }
 
-            if (transform != NULL) {
-                  frame->add_transform(
-                      bone_name, transform, has_pos, has_hpr, has_quat);
+                ConstPointerTo<TransformState> transform = NULL;
+
+                if (has_pos && has_hpr && !has_quat)
+                    transform = TransformState::make_pos_hpr(pos, hpr);
+                else if (has_pos && !has_hpr && has_quat)
+                    // there is no make_pos_quat() method
+                    transform = TransformState::make_pos_quat_scale(
+                        pos, quat, LVecBase3(1, 1, 1));
+                else if (has_pos && !has_hpr && !has_quat)
+                    transform = TransformState::make_pos(pos);
+                else if (!has_pos && has_hpr && !has_quat)
+                    transform = TransformState::make_hpr(hpr);
+                else if (!has_pos && !has_hpr && has_quat)
+                    transform = TransformState::make_quat(quat);
+
+                if (transform != NULL) {
+                      frame->add_transform(
+                          bone_name, transform, has_pos, has_hpr, has_quat);
+                }
             }
         }
     }

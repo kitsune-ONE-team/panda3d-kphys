@@ -71,30 +71,42 @@ void AnimatorNode::update(double dt) {
 }
 
 void AnimatorNode::apply() {
-    PointerTo<Frame> frame = new Frame();
+    PointerTo<Frame> frames[NUM_SLOTS];
+    for (unsigned int s = 0; s < NUM_SLOTS; s++)
+        frames[s] = new Frame();
+    double factor = 0;
 
     unsigned int csize = get_num_channels();
     for (unsigned int c = 0; c < csize; c++) {
         PointerTo<Channel> channel = get_channel(c);
-        PointerTo<Frame> frame_c = channel->get_frame();
+        factor = channel->get_factor();
 
-        if (frame_c == NULL)
-            continue;
-
-        unsigned int bsize = frame_c->get_num_transforms();
-        for (unsigned int b = 0; b < bsize; b++) {
-            const char* bone_name = frame_c->get_bone_name(b);
-            if (!channel->is_bone_enabled(bone_name))
+        for (unsigned int s = 0; s < NUM_SLOTS; s++) {
+            PointerTo<Frame> frame = channel->get_frame(s);
+            if (frame == NULL)
                 continue;
 
-            if (frame->get_transform(bone_name) != NULL)
-                continue;
+            // copy transforms
+            unsigned int bsize = frame->get_num_transforms();
+            for (unsigned int b = 0; b < bsize; b++) {
+                const char* bone_name = frame->get_bone_name(b);
+                if (!channel->is_bone_enabled(bone_name))
+                    continue;
 
-            ConstPointerTo<TransformState> transform = frame_c->get_transform(bone_name);
-            unsigned short flags = frame_c->get_transform_flags(bone_name);
-            frame->add_transform(bone_name, transform, flags);
+                if (frames[s]->get_transform(bone_name) != NULL)
+                    continue;
+
+                ConstPointerTo<TransformState> transform = frame->get_transform(bone_name);
+                if (transform == NULL)
+                    continue;
+
+                unsigned short flags = frame->get_transform_flags(bone_name);
+                frames[s]->add_transform(bone_name, transform, flags);
+            }
         }
     }
+
+    PointerTo<Frame> frame = frames[SLOT_A]->mix(frames[SLOT_B], factor);
 
     NodePath animator = NodePath::any_path(this);
     NodePathCollection armatures = animator.find_all_matches("**/+ArmatureNode");

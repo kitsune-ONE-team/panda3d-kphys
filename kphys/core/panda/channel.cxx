@@ -3,14 +3,6 @@
 #include "kphys/core/panda/channel.h"
 
 
-unsigned long umin(unsigned long a, unsigned long b) {
-    if (a < b)
-        return a;
-    else
-        return b;
-}
-
-
 TypeHandle Channel::_type_handle;
 
 Channel::Channel(const char* name): Namable(name) {
@@ -120,30 +112,6 @@ PointerTo<Frame> Channel::get_frame(unsigned short slot, bool interpolate) {
 }
 
 /**
-   Returns blended animation frame.
-*/
-PointerTo<Frame> Channel::get_frame(bool interpolate) {
-    double factor = get_factor();
-
-    if (factor <= 0.0) {
-        return get_frame(SLOT_A, interpolate);
-
-    } else if (factor >= 1.0) {
-        return get_frame(SLOT_B, interpolate);
-
-    } else {
-        PointerTo<Frame> frame_a = get_frame(SLOT_A, interpolate);
-        PointerTo<Frame> frame_b = get_frame(SLOT_B, interpolate);
-
-        if (frame_a != NULL && frame_b != NULL) {
-            return frame_a->mix(frame_b, factor);
-        }
-    }
-
-    return NULL;
-}
-
-/**
    Returns the animation in the specified slot.
 */
 PointerTo<Animation> Channel::get_animation(unsigned short slot) {
@@ -178,18 +146,18 @@ void Channel::switch_animation() {
 
 void Channel::update(double dt) {
     // increment frames
-    for (unsigned short i = 0; i < NUM_SLOTS; i++) {
-        if (_animations[i] == NULL || _animations[i]->is_manual())
+    for (unsigned short s = 0; s < NUM_SLOTS; s++) {
+        if (_animations[s] == NULL || _animations[s]->is_manual())
             continue;
 
-        if (i == SLOT_A && _factor >= _blending_time)
+        if (s == SLOT_A && _factor >= _blending_time)
             continue;
 
-        double index_delta = dt / _animations[i]->get_frame_time();
-        double index = get_frame_index(i) + index_delta;
-        unsigned long num_frames = _animations[i]->get_num_frames();
+        double index_delta = dt / _animations[s]->get_frame_time();
+        double index = get_frame_index(s) + index_delta;
+        unsigned long num_frames = _animations[s]->get_num_frames();
 
-        if (_animations[i]->is_loop()) {
+        if (_animations[s]->is_loop()) {
             // num_frames = 100 (frame 0...99)
             // frame = 100
             // frame >= 100 -> frame = 100 - 100 = 0
@@ -198,7 +166,7 @@ void Channel::update(double dt) {
         } else {
             index = fmin(index, num_frames - 1);
         }
-        set_frame_index(i, index);
+        set_frame_index(s, index);
     }
 
     // update blending factor
