@@ -30,7 +30,6 @@ BVHQ::BVHQ(const char* name, Filename filename): Animation(name) {
     _istream = vfs->open_read_file(filename, true);
 
     _frame_time = 0;
-    _frame_time_hns = 0;
 
     char* word = (char*) malloc(sizeof(char) * WORD_MAX_LEN);
     char end = ' ';
@@ -142,7 +141,6 @@ BVHQ::BVHQ(const char* name, Filename filename): Animation(name) {
 #ifdef DEBUG
                 printf("FRAME TIME %.6f\n", _frame_time);
 #endif
-                _frame_time_hns = 10000000L * (unsigned long) _frame_time;
                 if (end == '\0')  // end of motion section
                     goto finally;
             }

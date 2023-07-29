@@ -17,14 +17,15 @@ PUBLISHED:
     Channel(const char* name);
     ~Channel();
     double get_factor();
-    void set_blending_time(unsigned long t);
+    void set_blending_time(double t);
     double get_frame_index(unsigned short slot);
     void set_frame_index(unsigned short slot, double frame);
+    PointerTo<Frame> get_frame(bool interpolate=true);
     PointerTo<Frame> get_frame(unsigned short slot, bool interpolate=true);
     PointerTo<Animation> get_animation(unsigned short slot);
     void push_animation(PointerTo<Animation> animation);
     void switch_animation();
-    void update(unsigned long dt);
+    void update(double dt);
     void include_bone(const char* name);
     void exclude_bone(const char* name);
     unsigned int get_num_included_bones();
@@ -35,9 +36,9 @@ PUBLISHED:
 
 private:
     PointerTo<Animation> _animations[2];
-    unsigned long _frames[2];
-    unsigned long _factor;
-    unsigned long _blending_time;
+    double _frame_indices[2];
+    double _factor;
+    double _blending_time;
     pmap<std::string, bool> _include_bones;
     pmap<std::string, bool> _exclude_bones;
 

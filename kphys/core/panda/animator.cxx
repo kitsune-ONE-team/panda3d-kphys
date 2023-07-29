@@ -62,23 +62,23 @@ PointerTo<Animation> AnimatorNode::get_animation(const char* name) {
     return _animations[s];
 }
 
+void AnimatorNode::update(double dt) {
+    unsigned int csize = get_num_channels();
+    for (unsigned int c = 0; c < csize; c++) {
+        PointerTo<Channel> channel = get_channel(c);
+        channel->update(dt);
+    }
+}
+
 void AnimatorNode::apply() {
     PointerTo<Frame> frame = new Frame();
 
     unsigned int csize = get_num_channels();
     for (unsigned int c = 0; c < csize; c++) {
         PointerTo<Channel> channel = get_channel(c);
+        PointerTo<Frame> frame_c = channel->get_frame();
 
-        PointerTo<Frame> frame_a = channel->get_frame(SLOT_A);
-        PointerTo<Frame> frame_b = channel->get_frame(SLOT_B);
-        PointerTo<Frame> frame_c;
-        if (frame_a != NULL && frame_b != NULL)
-            frame_c = frame_a->mix(frame_b, channel->get_factor());
-        else if (frame_a == NULL && frame_b != NULL)
-            frame_c = frame_b;
-        else if (frame_a != NULL && frame_b == NULL)
-            frame_c = frame_a;
-        else
+        if (frame_c == NULL)
             continue;
 
         unsigned int bsize = frame_c->get_num_transforms();

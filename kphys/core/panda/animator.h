@@ -20,6 +20,7 @@ PUBLISHED:
     PointerTo<Channel> get_channel(const char* name);
     void put_animation(const char* name, Animation* animation);
     PointerTo<Animation> get_animation(const char* name);
+    void update(double dt);
     void apply();
 
 private:
@@ -29,10 +30,6 @@ private:
     pmap<std::string, PointerTo<Channel>> _channels;
 
     static TypeHandle _type_handle;
-
-protected:
-    pvector<Frame*> _motion;
-    double _frame_time;
 
 public:
     static TypeHandle get_class_type() {

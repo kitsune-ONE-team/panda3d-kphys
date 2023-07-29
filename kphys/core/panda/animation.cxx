@@ -39,26 +39,10 @@ double Animation::get_frame_time() {
 }
 
 /**
-   Get the duration of frame in hundreds of nanoseconds (100ns).
-*/
-unsigned long Animation::get_frame_time_hns() {
-    return _frame_time_hns;
-}
-
-/**
    Set the duration of frame.
 */
 void Animation::set_frame_time(double frame_time) {
     _frame_time = frame_time;
-    _frame_time_hns = 10000000L * (unsigned long) _frame_time;
-}
-
-/**
-   Set the duration of frame in hundreds of nanoseconds (100ns).
-*/
-void Animation::set_frame_time_hns(unsigned long hns) {
-    _frame_time_hns = hns;
-    _frame_time = (double) hns / 10000000L;
 }
 
 /**

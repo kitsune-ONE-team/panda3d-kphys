@@ -15,9 +15,7 @@ PUBLISHED:
     unsigned long get_num_frames();
     PointerTo<Frame> get_frame(unsigned long i);
     double get_frame_time();
-    unsigned long get_frame_time_hns();
     void set_frame_time(double frame_time);
-    void set_frame_time_hns(unsigned long hns);
     bool can_blend_in();
     bool can_blend_out();
     bool is_loop();
@@ -38,7 +36,6 @@ private:
 protected:
     pvector<PointerTo<Frame>> _motion;
     double _frame_time;
-    unsigned long _frame_time_hns;
 
 public:
     static TypeHandle get_class_type() {
