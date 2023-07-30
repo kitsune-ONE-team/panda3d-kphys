@@ -29,6 +29,7 @@ PUBLISHED:
     void set_frame_index(unsigned short slot, double frame);
     PointerTo<Frame> get_frame(unsigned short slot, bool interpolate=true);
     PointerTo<Animation> get_animation(unsigned short slot);
+    void ls();
     void push_animation(PointerTo<Animation> animation);
     void switch_animation();
     void update(double dt);

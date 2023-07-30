@@ -72,19 +72,21 @@ void AnimatorNode::update(double dt) {
 
 void AnimatorNode::apply() {
     PointerTo<Frame> frames[NUM_SLOTS];
-    for (unsigned int s = 0; s < NUM_SLOTS; s++)
+    for (unsigned int s = 0; s < NUM_SLOTS; s++) {
         frames[s] = new Frame();
-    double factor = 0;
 
-    unsigned int csize = get_num_channels();
-    for (unsigned int c = 0; c < csize; c++) {
-        PointerTo<Channel> channel = get_channel(c);
-        factor = channel->get_factor();
+        // merge all channels into the singe frame
+        unsigned int csize = get_num_channels();
+        for (unsigned int c = 0; c < csize; c++) {
+            PointerTo<Channel> channel = get_channel(c);
 
-        for (unsigned int s = 0; s < NUM_SLOTS; s++) {
             PointerTo<Frame> frame = channel->get_frame(s);
             if (frame == NULL)
                 continue;
+
+            double cfactor = channel->get_factor();
+            if (s == SLOT_A)
+                cfactor = 1.0 - cfactor;
 
             // copy transforms
             unsigned int bsize = frame->get_num_transforms();
@@ -101,12 +103,12 @@ void AnimatorNode::apply() {
                     continue;
 
                 unsigned short flags = frame->get_transform_flags(bone_name);
-                frames[s]->add_transform(bone_name, transform, flags);
+                frames[s]->add_transform(bone_name, transform, flags, cfactor);
             }
         }
     }
 
-    PointerTo<Frame> frame = frames[SLOT_A]->mix(frames[SLOT_B], factor);
+    PointerTo<Frame> frame = frames[SLOT_A]->mix(frames[SLOT_B]);
 
     NodePath animator = NodePath::any_path(this);
     NodePathCollection armatures = animator.find_all_matches("**/+ArmatureNode");

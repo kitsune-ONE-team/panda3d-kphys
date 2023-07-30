@@ -33,11 +33,12 @@ Frame::~Frame() {
     _bone_names.clear();
     _transforms.clear();
     _transform_flags.clear();
+    _transform_factors.clear();
 }
 
 void Frame::add_transform(
         const char* name, ConstPointerTo<TransformState> transform,
-        unsigned short flags) {
+        unsigned short flags, double factor) {
     if (get_transform(name) != NULL)
         return;
 
@@ -45,11 +46,12 @@ void Frame::add_transform(
     _bone_names.push_back(s);
     _transforms[s] = transform;
     _transform_flags[s] = flags;
+    _transform_factors[s] = factor;
 }
 
 void Frame::add_transform(
         const char* name, ConstPointerTo<TransformState> transform,
-        bool has_pos, bool has_hpr, bool has_quat) {
+        bool has_pos, bool has_hpr, bool has_quat, double factor) {
     unsigned short flags = 0;
     if (has_pos)
         flags |= TRANSFORM_POS;
@@ -57,7 +59,7 @@ void Frame::add_transform(
         flags |= TRANSFORM_HPR;
     if (has_quat)
         flags |= TRANSFORM_QUAT;
-    add_transform(name, transform, flags);
+    add_transform(name, transform, flags, factor);
 }
 
 unsigned int Frame::get_num_transforms() {
@@ -87,15 +89,22 @@ unsigned short Frame::get_transform_flags(const char* name) {
     return _transform_flags[s];
 }
 
+double Frame::get_transform_factor(const char* name) {
+    std::string s = std::string(name);
+    if (_transform_factors.find(s) == _transform_factors.end())
+        return 1.0;
+    return _transform_factors[s];
+}
+
 PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
-    if (factor <= 0.0)
+    if (factor == 0.0)
         return this;
     else if (factor >= 1.0)
         return frame_b;
 
     PointerTo<Frame> frame = new Frame();
 
-    for (unsigned int s = 0; s < NUM_SLOTS; s++) {
+    for (unsigned int s = 0; s < NUM_SLOTS - 1; s++) {
         unsigned int bsize;
         if (s == SLOT_A)
             bsize = get_num_transforms();
@@ -116,29 +125,34 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
             ConstPointerTo<TransformState> transform_b = frame_b->get_transform(bone_name);
             unsigned short flags_a = get_transform_flags(bone_name);
             unsigned short flags_b = frame_b->get_transform_flags(bone_name);
+            double factor_a = get_transform_factor(bone_name);
+            double factor_b = frame_b->get_transform_factor(bone_name);
             unsigned short flags = flags_a & flags_b;
+            double cfactor = (factor >= 0.0) ? factor : factor_b;
 
-            if (transform_a != NULL && transform_b == NULL) {
+            if (transform_a != NULL && cfactor <= 0.0) {
                 frame->add_transform(bone_name, transform_a, flags_a);
-
-            } else if (transform_a == NULL && transform_b != NULL) {
+                continue;
+            } else if (transform_b != NULL && cfactor >= 1.0) {
                 frame->add_transform(bone_name, transform_b, flags_b);
+                continue;
+            }
 
-            } else if (transform_a != NULL && transform_b != NULL) {
+            if (transform_a != NULL && transform_b != NULL) {
                 LVecBase3 pos, hpr;
                 LQuaternion quat;
                 bool has_pos = false, has_hpr = false, has_quat = false;
 
                 if (flags & TRANSFORM_POS) {
-                    pos = mix3(transform_a->get_pos(), transform_b->get_pos(), factor);
+                    pos = mix3(transform_a->get_pos(), transform_b->get_pos(), cfactor);
                     has_pos = true;
                 }
                 if (flags & TRANSFORM_HPR) {
-                    hpr = mix3(transform_a->get_hpr(), transform_b->get_hpr(), factor);
+                    hpr = mix3(transform_a->get_hpr(), transform_b->get_hpr(), cfactor);
                     has_hpr = true;
                 }
                 if (flags & TRANSFORM_QUAT) {
-                    quat = mixq(transform_a->get_quat(), transform_b->get_quat(), factor);
+                    quat = mixq(transform_a->get_quat(), transform_b->get_quat(), cfactor);
                     has_quat = true;
                 }
 

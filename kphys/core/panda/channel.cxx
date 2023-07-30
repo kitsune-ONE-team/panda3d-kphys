@@ -118,6 +118,14 @@ PointerTo<Animation> Channel::get_animation(unsigned short slot) {
     return _animations[slot];
 }
 
+void Channel::ls() {
+    printf(
+        "%s:\n    A: %s\n    B: %s\n",
+        get_name().c_str(),
+        (_animations[SLOT_A] != NULL) ? _animations[SLOT_A]->get_name().c_str() : "-",
+        (_animations[SLOT_B] != NULL) ? _animations[SLOT_B]->get_name().c_str() : "-");
+}
+
 /**
    [A]  [B]
     A -- ? <- X
@@ -128,6 +136,9 @@ PointerTo<Animation> Channel::get_animation(unsigned short slot) {
 void Channel::push_animation(PointerTo<Animation> animation) {
     _animations[SLOT_B] = animation;
     _frame_indices[SLOT_B] = 0;
+#ifndef NDEBUG
+    ls();
+#endif
 }
 
 /**
@@ -140,6 +151,9 @@ void Channel::push_animation(PointerTo<Animation> animation) {
 void Channel::switch_animation() {
     _animations[SLOT_A] = _animations[SLOT_B];
     _frame_indices[SLOT_A] = _frame_indices[SLOT_B];
+#ifndef NDEBUG
+    ls();
+#endif
     push_animation(NULL);
     _factor = 0;  // new A = 100%
 }
@@ -155,24 +169,25 @@ void Channel::update(double dt) {
 
         double index_delta = dt / _animations[s]->get_frame_time();
         double index = get_frame_index(s) + index_delta;
-        unsigned long num_frames = _animations[s]->get_num_frames();
 
-        if (_animations[s]->is_loop()) {
+        unsigned long num_frames = _animations[s]->get_num_frames();
+        if (_animations[s]->is_loop()) {  // loop
             // num_frames = 100 (frame 0...99)
             // frame = 100
             // frame >= 100 -> frame = 100 - 100 = 0
             while (index >= num_frames)
                 index -= num_frames;
-        } else {
+        } else {  // clamp
             index = fmin(index, num_frames - 1);
         }
+
         set_frame_index(s, index);
     }
 
     // update blending factor
-    if (_animations[SLOT_A] != NULL && _animations[SLOT_A]->can_blend_out() &&
-            _animations[SLOT_B] != NULL && _animations[SLOT_B]->can_blend_in())
+    if ((_animations[SLOT_A] != NULL && !_animations[SLOT_A]->can_blend_out()) ||
+            (_animations[SLOT_B] != NULL && !_animations[SLOT_B]->can_blend_in()))
+        _factor = _blending_time;  // set to max
+    else
         _factor = fmin(_factor + dt, _blending_time);
-    else  // set to max
-        _factor = _blending_time;
 }
