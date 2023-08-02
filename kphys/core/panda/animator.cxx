@@ -85,6 +85,7 @@ void AnimatorNode::apply() {
                 continue;
 
             double cfactor = channel->get_factor();
+
             if (s == SLOT_A)
                 cfactor = 1.0 - cfactor;
 

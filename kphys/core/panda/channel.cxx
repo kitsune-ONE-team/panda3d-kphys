@@ -8,15 +8,15 @@ TypeHandle Channel::_type_handle;
 Channel::Channel(const char* name): Namable(name) {
     for (unsigned short i = 0; i < NUM_SLOTS; i++) {
         _animations[i] = NULL;
-        _frame_indices[i] = 0;
+        _frame_indices[i] = 0.0;
     }
-    double _factor = 0;
+    double _factor = 0.0;
 }
 
 Channel::~Channel() {
     for (unsigned short i = 0; i < NUM_SLOTS; i++) {
         _animations[i] = NULL;
-        _frame_indices[i] = 0;
+        _frame_indices[i] = 0.0;
     }
     _include_bones.clear();
     _exclude_bones.clear();
@@ -120,8 +120,9 @@ PointerTo<Animation> Channel::get_animation(unsigned short slot) {
 
 void Channel::ls() {
     printf(
-        "%s:\n    A: %s\n    B: %s\n",
+        "%s (%f):\n    A: %s\n    B: %s\n",
         get_name().c_str(),
+        get_factor(),
         (_animations[SLOT_A] != NULL) ? _animations[SLOT_A]->get_name().c_str() : "-",
         (_animations[SLOT_B] != NULL) ? _animations[SLOT_B]->get_name().c_str() : "-");
 }
@@ -135,7 +136,12 @@ void Channel::ls() {
 */
 void Channel::push_animation(PointerTo<Animation> animation) {
     _animations[SLOT_B] = animation;
-    _frame_indices[SLOT_B] = 0;
+    _frame_indices[SLOT_B] = 0.0;
+
+    if ((_animations[SLOT_A] != NULL && !_animations[SLOT_A]->can_blend_out()) ||
+            (_animations[SLOT_B] != NULL && !_animations[SLOT_B]->can_blend_in()))
+        _factor = _blending_time;  // set to max
+
 #ifndef NDEBUG
     ls();
 #endif
@@ -155,7 +161,7 @@ void Channel::switch_animation() {
     ls();
 #endif
     push_animation(NULL);
-    _factor = 0;  // new A = 100%
+    _factor = 0.0;  // new A = 100%
 }
 
 void Channel::update(double dt) {
@@ -185,9 +191,10 @@ void Channel::update(double dt) {
     }
 
     // update blending factor
-    if ((_animations[SLOT_A] != NULL && !_animations[SLOT_A]->can_blend_out()) ||
-            (_animations[SLOT_B] != NULL && !_animations[SLOT_B]->can_blend_in()))
-        _factor = _blending_time;  // set to max
-    else
-        _factor = fmin(_factor + dt, _blending_time);
+    _factor = fmin(_factor + dt, _blending_time);
+
+#ifndef NDEBUG
+    if (get_factor() > 0.0 && get_factor() < 1.0)
+        ls();
+#endif
 }

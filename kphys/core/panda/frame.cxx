@@ -1,6 +1,8 @@
 #include "kphys/core/panda/frame.h"
 #include "kphys/core/panda/channel.h"
 
+#define QUAT_LERP quat_nlerp
+
 
 TypeHandle Frame::_type_handle;
 
@@ -12,18 +14,65 @@ LVecBase3 mix3(const LVecBase3& a, const LVecBase3& b, double factor) {
         a.get_z() - factor * (a.get_z() - b.get_z()));
 }
 
-LQuaternion mixq(const LQuaternion& a, const LQuaternion& b, double factor) {
-    LQuaternion b2;
-    if (a.dot(b) < 0)  // negate quat if dot product is negative
-        b2 = LQuaternion(-b.get_r(), -b.get_i(), -b.get_j(), -b.get_k());
-    else
-        b2 = b;
+LQuaternion quat_nlerp(const LQuaternion& a, const LQuaternion& b, double factor) {
+    LQuaternion q_a = a;
+    LQuaternion q_b = b;
+    if (q_a.dot(q_b) < 0) {  // negate quat if dot product is negative
+        q_b.set_r(q_b.get_r() * -1);
+        q_b.set_i(q_b.get_i() * -1);
+        q_b.set_j(q_b.get_j() * -1);
+        q_b.set_k(q_b.get_k() * -1);
+    }
 
-    return LQuaternion(
-        a.get_r() - factor * (a.get_r() - b2.get_r()),
-        a.get_i() - factor * (a.get_i() - b2.get_i()),
-        a.get_j() - factor * (a.get_j() - b2.get_j()),
-        a.get_k() - factor * (a.get_k() - b2.get_k()));
+    LQuaternion q = LQuaternion(
+        q_a.get_r() - factor * (q_a.get_r() - q_b.get_r()),
+        q_a.get_i() - factor * (q_a.get_i() - q_b.get_i()),
+        q_a.get_j() - factor * (q_a.get_j() - q_b.get_j()),
+        q_a.get_k() - factor * (q_a.get_k() - q_b.get_k()));
+    // q.normalize();
+    return q;
+}
+
+LQuaternion mixq_slerp(const LQuaternion& a, const LQuaternion& b, double factor) {
+    LQuaternion q_a = a;
+    LQuaternion q_b = b;
+    // https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm
+    // quaternion to return
+    LQuaternion q;
+    // calculate angle between them.
+    double cos_half_theta = q_a.dot(q_b);
+    // you may need to add the following code after cosHalfTheta is calculated.
+    if (cos_half_theta < 0) {
+        q_b.set_r(q_b.get_r() * -1);
+        q_b.set_i(q_b.get_i() * -1);
+        q_b.set_j(q_b.get_j() * -1);
+        cos_half_theta *= -1;
+    }
+    // if qa=qb or qa=-qb then theta = 0 and we can return qa
+    if (fabs(cos_half_theta) >= 1.0) {
+        return q_a;
+    }
+    // calculate temporary values.
+    float half_theta = acos(cos_half_theta);
+    float sin_half_theta = sqrt(1.0 - cos_half_theta * cos_half_theta);
+    // if theta = 180 degrees then result is not fully defined
+    // we could rotate around any axis normal to qa or qb
+    if (fabs(sin_half_theta) < 0.001) {
+        q.set_r(q_a.get_r() * 0.5 + q_b.get_r() * 0.5);
+        q.set_i(q_a.get_i() * 0.5 + q_b.get_i() * 0.5);
+        q.set_j(q_a.get_j() * 0.5 + q_b.get_j() * 0.5);
+        q.set_k(q_a.get_k() * 0.5 + q_b.get_k() * 0.5);
+        return q;
+    }
+    float ratio_a = sin((1 - factor) * half_theta) / sin_half_theta;
+    float ratio_b = sin(factor * half_theta) / sin_half_theta;
+    // calculate quaternion.
+    q.set_r(q_a.get_r() * ratio_a + q_b.get_r() * ratio_b);
+    q.set_i(q_a.get_i() * ratio_a + q_b.get_i() * ratio_b);
+    q.set_j(q_a.get_j() * ratio_a + q_b.get_j() * ratio_b);
+    q.set_k(q_a.get_k() * ratio_a + q_b.get_k() * ratio_b);
+    // q.normalize();
+    return q;
 }
 
 
@@ -128,12 +177,13 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
             double factor_a = get_transform_factor(bone_name);
             double factor_b = frame_b->get_transform_factor(bone_name);
             unsigned short flags = flags_a & flags_b;
-            double cfactor = (factor >= 0.0) ? factor : factor_b;
+            double cfactor = (factor < 0.0) ? factor_b : factor;
 
-            if (transform_a != NULL && cfactor <= 0.0) {
+            if (transform_a != NULL && cfactor < 0.001) {
                 frame->add_transform(bone_name, transform_a, flags_a);
                 continue;
-            } else if (transform_b != NULL && cfactor >= 1.0) {
+            }
+            if (transform_b != NULL && cfactor > 0.999) {
                 frame->add_transform(bone_name, transform_b, flags_b);
                 continue;
             }
@@ -152,7 +202,7 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
                     has_hpr = true;
                 }
                 if (flags & TRANSFORM_QUAT) {
-                    quat = mixq(transform_a->get_quat(), transform_b->get_quat(), cfactor);
+                    quat = QUAT_LERP(transform_a->get_quat(), transform_b->get_quat(), cfactor);
                     has_quat = true;
                 }
 
