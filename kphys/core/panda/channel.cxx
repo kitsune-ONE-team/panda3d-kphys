@@ -142,7 +142,7 @@ void Channel::push_animation(PointerTo<Animation> animation) {
             (_animations[SLOT_B] != NULL && !_animations[SLOT_B]->can_blend_in()))
         _factor = _blending_time;  // set to max
 
-#ifndef NDEBUG
+#ifdef KPHYS_DEBUG
     ls();
 #endif
 }
@@ -157,7 +157,7 @@ void Channel::push_animation(PointerTo<Animation> animation) {
 void Channel::switch_animation() {
     _animations[SLOT_A] = _animations[SLOT_B];
     _frame_indices[SLOT_A] = _frame_indices[SLOT_B];
-#ifndef NDEBUG
+#ifdef KPHYS_DEBUG
     ls();
 #endif
     push_animation(NULL);
@@ -193,7 +193,7 @@ void Channel::update(double dt) {
     // update blending factor
     _factor = fmin(_factor + dt, _blending_time);
 
-#ifndef NDEBUG
+#ifdef KPHYS_DEBUG
     if (get_factor() > 0.0 && get_factor() < 1.0)
         ls();
 #endif

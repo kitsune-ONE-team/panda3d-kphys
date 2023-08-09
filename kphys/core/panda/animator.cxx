@@ -70,7 +70,7 @@ void AnimatorNode::update(double dt) {
     }
 }
 
-void AnimatorNode::apply() {
+void AnimatorNode::apply(bool blend, bool interpolate) {
     PointerTo<Frame> frames[NUM_SLOTS];
     for (unsigned int s = 0; s < NUM_SLOTS; s++) {
         frames[s] = new Frame();
@@ -80,11 +80,13 @@ void AnimatorNode::apply() {
         for (unsigned int c = 0; c < csize; c++) {
             PointerTo<Channel> channel = get_channel(c);
 
-            PointerTo<Frame> frame = channel->get_frame(s);
+            PointerTo<Frame> frame = channel->get_frame(s, interpolate);
             if (frame == NULL)
                 continue;
 
             double cfactor = channel->get_factor();
+            if (!blend)
+                cfactor = 1.0;
 
             if (s == SLOT_A)
                 cfactor = 1.0 - cfactor;

@@ -21,7 +21,7 @@ PUBLISHED:
     void put_animation(const char* name, Animation* animation);
     PointerTo<Animation> get_animation(const char* name);
     void update(double dt);
-    void apply();
+    void apply(bool blend=true, bool interpolate=true);
 
 private:
     NodePath _armature;

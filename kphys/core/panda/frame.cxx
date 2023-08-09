@@ -33,7 +33,7 @@ LQuaternion quat_nlerp(const LQuaternion& a, const LQuaternion& b, double factor
     return q;
 }
 
-LQuaternion mixq_slerp(const LQuaternion& a, const LQuaternion& b, double factor) {
+LQuaternion quat_slerp(const LQuaternion& a, const LQuaternion& b, double factor) {
     LQuaternion q_a = a;
     LQuaternion q_b = b;
     // https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm
@@ -153,7 +153,7 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
 
     PointerTo<Frame> frame = new Frame();
 
-    for (unsigned int s = 0; s < NUM_SLOTS - 1; s++) {
+    for (unsigned int s = 0; s < NUM_SLOTS; s++) {
         unsigned int bsize;
         if (s == SLOT_A)
             bsize = get_num_transforms();
@@ -183,6 +183,7 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
                 frame->add_transform(bone_name, transform_a, flags_a);
                 continue;
             }
+
             if (transform_b != NULL && cfactor > 0.999) {
                 frame->add_transform(bone_name, transform_b, flags_b);
                 continue;

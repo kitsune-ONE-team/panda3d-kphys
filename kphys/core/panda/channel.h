@@ -7,6 +7,10 @@
 
 #include "kphys/core/panda/animation.h"
 
+#ifndef NDEBUG
+#define DEBUG_KPHYS
+#endif
+
 #define NUM_SLOTS 2
 /* #define SLOT_A 0 */
 /* #define SLOT_B 1 */
