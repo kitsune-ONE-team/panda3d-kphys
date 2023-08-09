@@ -251,15 +251,14 @@ NodePath ArmatureNode::find_bone(const char* name) {
     NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
     for (int i = 0; i < bones.get_num_paths(); i++) {
         NodePath np = bones.get_path(i);
-        if (strcmp(np.get_name().c_str(), name) == 0)
-            // _bones[s] = np;
+        if (strcmp(np.get_name().c_str(), name) == 0) {
+            _bones[s] = np;
             return np;
+        }
     }
 
-    // _bones[s] = NodePath();
-    // return _bones[s];
-
-    return NodePath();
+    _bones[s] = NodePath();
+    return _bones[s];
 }
 
 /**
