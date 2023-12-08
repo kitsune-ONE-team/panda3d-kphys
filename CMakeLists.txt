@@ -96,3 +96,21 @@ endif()
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(kphys)
+
+if(${WITH_TESTS} MATCHES "ON")
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests.h.cpp
+    COMMAND cxxtestgen --error-printer -o
+      ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests.h.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/kphys_tests.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kphys_tests.h)
+  add_executable(kphys_tests ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests.h.cpp)
+  target_link_libraries(kphys_tests core)
+
+  add_custom_command(
+    OUTPUT kphys_tests__done
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests)
+  add_custom_target(
+    kphys_tests__run ALL
+    DEPENDS kphys_tests__done)
+endif()

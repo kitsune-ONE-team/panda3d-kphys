@@ -12,6 +12,7 @@
 #include "kphys/core/panda/converters.h"
 #include "kphys/core/panda/effector.h"
 #include "kphys/core/panda/frame.h"
+#include "kphys/core/panda/hit.h"
 #include "kphys/core/panda/hitbox.h"
 #include "kphys/core/panda/ik.h"
 #include "kphys/core/panda/spring.h"
@@ -40,6 +41,7 @@ void init_libcore() {
     Frame::init_type();
 
     ControllerNode::init_type();
+    Hit::init_type();
     HitboxNode::init_type();
     SpringConstraint::init_type();
     // Spring2Constraint::init_type();
