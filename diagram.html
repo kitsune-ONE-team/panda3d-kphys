@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <script src="https://unpkg.com/graphre/dist/graphre.js"></script>
+        <script src="https://unpkg.com/nomnoml/dist/nomnoml.js"></script>
+    </head>
+    <body>
+        <canvas id="target-canvas"></canvas>
+        <script>
+            var canvas = document.getElementById('target-canvas');
+            var source = `
+[Animation|
+  Animation(const char* name, bool local_space=true)|
+  bool is_local_space()|
+  unsigned long get_num_frames()|
+  PointerTo<Frame> get_frame(unsigned long i)|
+  double get_frame_time()|
+  void set_frame_time(double frame_time)|
+  bool can_blend_in()|
+  bool can_blend_out()|
+  bool is_loop()|
+  bool is_manual()|
+  void set_blending_mode(bool blend_in, bool blend_out)|
+  void set_loop(bool loop)|
+  void set_manual(bool manual)
+] <:- [BVHQ|
+  BVHQ(const char* name, Filename filename, bool local_space=true)
+]
+
+[Animation] -->* [Frame|
+  Frame()|
+  unsigned int get_num_transforms()|
+  const char* get_bone_name(unsigned int i)|
+  ConstPointerTo<TransformState> get_transform(unsigned int i)|
+  ConstPointerTo<TransformState> get_transform(const char* name)|
+  unsigned short get_transform_flags(const char* name)|
+  double get_transform_factor(const char* name)|
+  PointerTo<Frame> mix(PointerTo<Frame> frame_b, double factor=-1.0)
+]
+
+[Frame] -->* [TransformState]
+            `;
+            nomnoml.draw(canvas, source);
+        </script>
+    </body>
+</html>
