@@ -18,7 +18,7 @@ public:
 
 class EXPORT_CLASS BVHQ: public Animation {
 PUBLISHED:
-    BVHQ(const char* name, Filename filename);
+    BVHQ(const char* name, Filename filename, bool local_space=true);
     ~BVHQ();
 
 private:

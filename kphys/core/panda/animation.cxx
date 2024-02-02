@@ -3,7 +3,8 @@
 
 TypeHandle Animation::_type_handle;
 
-Animation::Animation(const char* name): Namable(name) {
+Animation::Animation(const char* name, bool local_space): Namable(name) {
+    _local_space = local_space;
     _blend_in = true;
     _blend_out = true;
     _is_loop = true;
@@ -21,6 +22,10 @@ unsigned long Animation::_get_frame_index(long frame) {
     while (frame >= num_frames)
         frame -= num_frames;
     return (unsigned long) frame;
+}
+
+bool Animation::is_local_space() {
+    return _local_space;
 }
 
 unsigned long Animation::get_num_frames() {

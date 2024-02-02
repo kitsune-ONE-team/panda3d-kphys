@@ -25,7 +25,8 @@
 
 TypeHandle BVHQ::_type_handle;
 
-BVHQ::BVHQ(const char* name, Filename filename): Animation(name) {
+BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
+        Animation(name, local_space) {
     VirtualFileSystem* vfs = VirtualFileSystem::get_global_ptr();
     _istream = vfs->open_read_file(filename, true);
 
