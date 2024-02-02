@@ -70,7 +70,7 @@ void AnimatorNode::update(double dt) {
     }
 }
 
-void AnimatorNode::apply(bool blend, bool interpolate) {
+void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
     PointerTo<Frame> frames[NUM_SLOTS];
     for (unsigned int s = 0; s < NUM_SLOTS; s++) {
         frames[s] = new Frame();
@@ -117,7 +117,7 @@ void AnimatorNode::apply(bool blend, bool interpolate) {
     NodePathCollection armatures = animator.find_all_matches("**/+ArmatureNode");
     for (int i = 0; i < armatures.get_num_paths(); i++) {
         NodePath np = armatures.get_path(i);
-        ((ArmatureNode*) np.node())->apply(frame);
+        ((ArmatureNode*) np.node())->apply(frame, local_space);
         break;
     }
 }
