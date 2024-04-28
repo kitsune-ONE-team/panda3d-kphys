@@ -31,7 +31,7 @@ PUBLISHED:
     void cleanup();
     void reset();
     void rebuild_bind_pose();
-    void rebuild_ik(unsigned int ik_engine=IK_ENGINE_IK);
+    void rebuild_ik(unsigned int ik_engine=IK_ENGINE_IK, unsigned int max_iterations=10);
     void update_ik();
     void update_ik(unsigned int priority);
     void update_shader_inputs();
@@ -40,6 +40,7 @@ PUBLISHED:
 
 private:
     unsigned int _ik_engine;
+    unsigned int _ik_max_iterations;
     LMatrix4Array* _bone_init_local;  // initial local-space matrices
     LMatrix4Array* _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
     LMatrix4Array* _bone_transform;  // current world-space matrices

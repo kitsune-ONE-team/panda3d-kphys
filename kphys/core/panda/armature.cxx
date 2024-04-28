@@ -79,8 +79,9 @@ void ArmatureNode::rebuild_bind_pose() {
     _update_matrices(armature, LMatrix4::ident_mat(), 0);
 }
 
-void ArmatureNode::rebuild_ik(unsigned int ik_engine) {
+void ArmatureNode::rebuild_ik(unsigned int ik_engine, unsigned int max_iterations) {
     _ik_engine = ik_engine;
+    _ik_max_iterations = max_iterations;
 
     if (_ik_engine == IK_ENGINE_IK) {
         if (_ik_solver != NULL)
@@ -89,7 +90,7 @@ void ArmatureNode::rebuild_ik(unsigned int ik_engine) {
         _ik_solver->flags &= ~IK_ENABLE_CONSTRAINTS;
         _ik_solver->flags &= ~IK_ENABLE_TARGET_ROTATIONS;
         _ik_solver->flags |= IK_ENABLE_JOINT_ROTATIONS;
-        _ik_solver->max_iterations = 5;
+        _ik_solver->max_iterations = max_iterations;
 
         NodePath armature = NodePath::any_path(this);
         children_rebuild_ik(armature, _ik_solver, 0);
@@ -212,7 +213,7 @@ void ArmatureNode::solve_ik(unsigned int priority) {
             NodePath np = nps.get_path(i);
             EffectorNode* effector = (EffectorNode*) np.node();
             if (effector->get_weight())
-                effector->inverse_kinematics_ccd();
+                effector->inverse_kinematics_ccd(1e-2, 1, _ik_max_iterations);
         }
         break;
 

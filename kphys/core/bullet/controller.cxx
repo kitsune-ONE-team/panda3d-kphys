@@ -32,7 +32,7 @@ void btController::set_simulated(bool simulated) {
     _is_simulated = simulated;
 }
 
-void btController::jump () {
+void btController::jump() {
     m_verticalVelocity = m_jumpSpeed;
     m_wasJumping = true;
 }
