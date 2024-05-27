@@ -20,12 +20,10 @@
 #define NO_FRAMES 5
 #define NO_FRAME_TIME 6
 
-// #define DEBUG 1
-
 
 TypeHandle BVHQ::_type_handle;
 
-BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
+BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
         Animation(name, local_space) {
     VirtualFileSystem* vfs = VirtualFileSystem::get_global_ptr();
     _istream = vfs->open_read_file(filename, true);
@@ -62,9 +60,8 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
             joint->name = (char*) malloc(sizeof(char) * strlen(word));
             strcpy(joint->name, word);
             _hierarchy.push_back(joint);
-#ifdef DEBUG
-            printf("JOINT %s\n", joint->name);
-#endif
+            if (debug)
+                printf("JOINT %s\n", joint->name);
 
         } else if (strcmp(word, "CHANNELS") == 0) {
             if (end == '\0' || end == '\n') {
@@ -74,9 +71,8 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
             end = _readword(word, WORD_MAX_LEN);  // read channels count
 
             unsigned short bone_num_channels = atoi(word);
-#ifdef DEBUG
-            printf("JOINT %s CHANNELS %d\n", _hierarchy.back()->name, bone_num_channels);
-#endif
+            if (debug)
+                printf("JOINT %s CHANNELS %d\n", _hierarchy.back()->name, bone_num_channels);
 
             if (end == '\0' || end == '\n') {
                 exception = NO_CHANNELS;
@@ -88,9 +84,8 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
 
                 char* channel = (char*) malloc(sizeof(char) * strlen(word));
                 strcpy(channel, word);
-#ifdef DEBUG
-                printf("JOINT %s CHANNEL %s\n", _hierarchy.back()->name, channel);
-#endif
+                if (debug)
+                    printf("JOINT %s CHANNEL %s\n", _hierarchy.back()->name, channel);
                 _hierarchy.back()->channels.push_back(channel);
 
                 if (end == '\n')  // no more channels
@@ -119,9 +114,8 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
             }
             end = _readword(word, WORD_MAX_LEN);  // read frames count
             num_frames = atol(word);
-#ifdef DEBUG
-            printf("FRAMES %ld\n", num_frames);
-#endif
+            if (debug)
+                printf("FRAMES %ld\n", num_frames);
             if (end == '\0')
                 goto finally;
 
@@ -139,9 +133,8 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
                 }
                 end = _readword(word, WORD_MAX_LEN);  // read frame time
                 _frame_time = atof(word);
-#ifdef DEBUG
-                printf("FRAME TIME %.6f\n", _frame_time);
-#endif
+                if (debug)
+                    printf("FRAME TIME %.6f\n", _frame_time);
                 if (end == '\0')  // end of motion section
                     goto finally;
             }
@@ -150,9 +143,8 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
 
         } else if (num_frames) {
             for (unsigned long iframe = 0; iframe < num_frames; iframe++) {
-#ifdef DEBUG
-                printf("FRAME %ld\n", iframe);
-#endif
+                if (debug)
+                    printf("FRAME %ld\n", iframe);
 
                 Frame* frame = new Frame();
                 unsigned int bi = 0;
@@ -167,9 +159,8 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
                         if (iframe > 0 || bi > 0 || ci > 0)
                             end = _readword(word, WORD_MAX_LEN);  // read channel value
 
-#ifdef DEBUG
-                        // printf("CHANNEL %s %s %s\n", joint->name, channel, word);
-#endif
+                        // if (debug)
+                        //     printf("CHANNEL %s %s %s\n", joint->name, channel, word);
 
                         if (strcmp(channel, "Xposition") == 0) {
                             pos.set_x(atof(word));
@@ -256,7 +247,29 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space):
     goto finally;
 
     except:
-        // TODO: error message
+        if (debug)
+            switch(exception) {
+            case NO_HIERARCHY:
+                printf("HIERARCHY not found!\n");
+                break;
+            case NO_MOTION:
+                printf("MOTION not found!\n");
+                break;
+            case NO_JOINT_NAME:
+                printf("JOINT has no name!\n");
+                break;
+            case NO_CHANNELS:
+                printf("CHANNELS not found!\n");
+                break;
+            case NO_FRAMES:
+                printf("FRAMES not found!\n");
+                break;
+            case NO_FRAME_TIME:
+                printf("FRAME_TIME not found!\n");
+                break;
+            default:
+                break;
+            }
 
     finally:
         free(word);
@@ -281,16 +294,16 @@ char BVHQ::_readword(char* word, unsigned long size) {
     char c = '*';
 
     while (c != ' ' && c != '\t' && c != '\n' && c != '\0' &&
-           i < size && !_istream->eof()) {
+           i < (size - 1) && !_istream->eof()) {
         _istream->get(c);
         word[i++] = c;
     }
 
     if (i == 0) {
-        word[0] = '\0';
+        word[i] = '\0';
         return '\0';
+    } else {
+        word[i - 1] = '\0';
+        return c;
     }
-
-    word[i - 1] = '\0';
-    return c;
 }
