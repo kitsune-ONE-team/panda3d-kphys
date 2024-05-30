@@ -20,3 +20,11 @@ make
 make install DESTDIR=../dist/
 
 cd ..
+
+export PYTHONPATH=\
+/root/jenkins/workspace/panda3d-lynx64/dist/panda3d/lib/python3.11/site-packages:\
+dist/panda3d-kphys/lib/python3.11/site-packages
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/root/jenkins/workspace/panda3d-lynx64/dist/panda3d/lib
+
+/root/jenkins/workspace/python-lynx64/dist/python/bin/python3.11 samples/animation.py

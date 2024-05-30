@@ -1,0 +1,10 @@
+HIERARCHY
+ROOT bone
+{
+	OFFSET 1.0 2.0 3.0
+	CHANNELS 7 Xposition Yposition Zposition Irotation Jrotation Krotation Rrotation
+}
+MOTION
+Frames: 1
+Frame Time: 1.000000
+2.0 3.0 4.0 0.1 0.2 0.3 0.4

@@ -30,7 +30,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 
     _frame_time = 0;
 
-    char* word = (char*) malloc(sizeof(char) * WORD_MAX_LEN);
+    char word[WORD_MAX_LEN];
     char end = ' ';
     unsigned int exception = 0;
 
@@ -272,19 +272,22 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
             }
 
     finally:
-        free(word);
+        if (debug)
+            printf("DONE\n");
         vfs->close_read_file(_istream);
+        if (debug)
+            printf("FILE CLOSED\n");
 
 }
 
 BVHQ::~BVHQ() {
     for (BVHQJoint* joint: _hierarchy) {
-        free(joint->name);
-        for (char* channel: joint->channels) {
-            free(channel);
-        }
+        // free(joint->name);
+        // for (char* channel: joint->channels) {
+        //     free(channel);
+        // }
         joint->channels.clear();
-        free(joint);
+        // free(joint);
     }
     _hierarchy.clear();
 }
