@@ -37,6 +37,7 @@ void init_libcore() {
     Animation::init_type();
     AnimatorNode::init_type();
     BVHQ::init_type();
+    BVHQJoint::init_type();
     Channel::init_type();
     Frame::init_type();
 

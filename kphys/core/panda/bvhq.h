@@ -9,10 +9,35 @@
 #include "kphys/core/panda/animation.h"
 
 
-class BVHQJoint {
+class EXPORT_CLASS BVHQJoint: public TypedReferenceCount, public Namable {
+PUBLISHED:
+    BVHQJoint(const char* name);
+    ~BVHQJoint();
+    unsigned long get_num_channels();
+    char* get_channel(unsigned long i);
+
+private:
+    pvector<char*> _channels;
+
+    static TypeHandle _type_handle;
+
 public:
-    char* name;
-    pvector<char*> channels;
+    void add_channel(char* name);
+
+    static TypeHandle get_class_type() {
+        return _type_handle;
+    }
+    static void init_type() {
+        TypedReferenceCount::init_type();
+        register_type(_type_handle, "BVHQJoint", TypedReferenceCount::get_class_type());
+    }
+    virtual TypeHandle get_type() const {
+        return get_class_type();
+    }
+    virtual TypeHandle force_init_type() {
+        init_type();
+        return get_class_type();
+    }
 };
 
 
@@ -23,7 +48,7 @@ PUBLISHED:
 
 private:
     std::istream* _istream;
-    pvector<BVHQJoint*> _hierarchy;
+    pvector<PointerTo<BVHQJoint>> _hierarchy;
 
     char _readword(char* word, unsigned long size);
 

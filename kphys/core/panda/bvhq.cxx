@@ -22,9 +22,33 @@
 
 
 TypeHandle BVHQ::_type_handle;
+TypeHandle BVHQJoint::_type_handle;
+
+
+BVHQJoint::BVHQJoint(const char* name): Namable(name) {
+}
+
+BVHQJoint::~BVHQJoint() {
+    _channels.clear();
+}
+
+unsigned long BVHQJoint::get_num_channels() {
+    return _channels.size();
+}
+
+char* BVHQJoint::get_channel(unsigned long i) {
+    return _channels[i];
+}
+
+void BVHQJoint::add_channel(char* name) {
+    return _channels.push_back(name);
+}
 
 BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
         Animation(name, local_space) {
+    if (debug)
+        printf("FILE OPEN %s\n", name);
+
     VirtualFileSystem* vfs = VirtualFileSystem::get_global_ptr();
     _istream = vfs->open_read_file(filename, true);
 
@@ -56,12 +80,14 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
             }
             end = _readword(word, WORD_MAX_LEN);  //  read bone name
 
-            BVHQJoint* joint = new BVHQJoint();
-            joint->name = (char*) malloc(sizeof(char) * strlen(word));
-            strcpy(joint->name, word);
+            char* name = (char*) malloc(sizeof(char) * strlen(word));
+            strcpy(name, word);
+
+            PointerTo<BVHQJoint> joint = new BVHQJoint(name);
             _hierarchy.push_back(joint);
+
             if (debug)
-                printf("JOINT %s\n", joint->name);
+                printf("JOINT %s\n", joint->get_name().c_str());
 
         } else if (strcmp(word, "CHANNELS") == 0) {
             if (end == '\0' || end == '\n') {
@@ -72,7 +98,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 
             unsigned short bone_num_channels = atoi(word);
             if (debug)
-                printf("JOINT %s CHANNELS %d\n", _hierarchy.back()->name, bone_num_channels);
+                printf("JOINT %s CHANNELS %d\n", _hierarchy.back()->get_name().c_str(), bone_num_channels);
 
             if (end == '\0' || end == '\n') {
                 exception = NO_CHANNELS;
@@ -84,9 +110,10 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 
                 char* channel = (char*) malloc(sizeof(char) * strlen(word));
                 strcpy(channel, word);
+
+                _hierarchy.back()->add_channel(channel);
                 if (debug)
-                    printf("JOINT %s CHANNEL %s\n", _hierarchy.back()->name, channel);
-                _hierarchy.back()->channels.push_back(channel);
+                    printf("JOINT %s CHANNEL %s\n", _hierarchy.back()->get_name().c_str(), channel);
 
                 if (end == '\n')  // no more channels
                     break;
@@ -149,13 +176,14 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
                 Frame* frame = new Frame();
                 unsigned int bi = 0;
 
-                for (BVHQJoint* joint: _hierarchy) {
+                for (PointerTo<BVHQJoint> joint: _hierarchy) {
                     LVecBase3 pos, hpr;
                     LQuaternion quat;
                     bool has_pos = false, has_hpr = false, has_quat = false;
-                    unsigned ci = 0;
 
-                    for (char* channel: joint->channels) {
+                    for (unsigned long ci = 0; ci < joint->get_num_channels(); ci++) {
+                        char* channel = joint->get_channel(ci);
+
                         if (iframe > 0 || bi > 0 || ci > 0)
                             end = _readword(word, WORD_MAX_LEN);  // read channel value
 
@@ -205,7 +233,6 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
                             has_quat = true;
                         }
 
-                        ci++;
                         if (end == '\0' || end == '\n')
                             break;  // leave channels
                     }  // bone channels
@@ -227,7 +254,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 
                     if (transform != NULL) {
                         frame->add_transform(
-                            joint->name, transform, has_pos, has_hpr, has_quat);
+                            joint->get_name().c_str(), transform, has_pos, has_hpr, has_quat);
                     }
 
                     bi++;
@@ -281,14 +308,6 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 }
 
 BVHQ::~BVHQ() {
-    for (BVHQJoint* joint: _hierarchy) {
-        // free(joint->name);
-        // for (char* channel: joint->channels) {
-        //     free(channel);
-        // }
-        joint->channels.clear();
-        // free(joint);
-    }
     _hierarchy.clear();
 }
 
