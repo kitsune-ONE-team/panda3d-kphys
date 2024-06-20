@@ -173,7 +173,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
                 if (debug)
                     printf("FRAME %ld\n", iframe);
 
-                Frame* frame = new Frame();
+                PointerTo<Frame> frame = new Frame();
                 unsigned int bi = 0;
 
                 for (PointerTo<BVHQJoint> joint: _hierarchy) {

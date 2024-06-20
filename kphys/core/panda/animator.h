@@ -18,7 +18,7 @@ PUBLISHED:
     void add_channel(const char* name);
     PointerTo<Channel> get_channel(unsigned int i);
     PointerTo<Channel> get_channel(const char* name);
-    void put_animation(const char* name, Animation* animation);
+    void put_animation(const char* name, PointerTo<Animation> animation);
     PointerTo<Animation> get_animation(const char* name);
     void update(double dt);
     void apply(bool blend=true, bool interpolate=true, bool local_space=true);

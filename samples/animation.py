@@ -10,7 +10,7 @@ anim_path = os.path.join(path, 'animation.bvhq')
 
 
 for test in range(5):
-    anim = BVHQ('animation.bvhq', Filename.from_os_specific(anim_path), True, True)
+    anim = BVHQ('animation.bvhq', Filename.from_os_specific(anim_path), True)
     print(anim)
     del anim
     time.sleep(1)

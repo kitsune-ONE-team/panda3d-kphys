@@ -15,6 +15,8 @@
 #include "kphys/core/panda/hit.h"
 #include "kphys/core/panda/hitbox.h"
 #include "kphys/core/panda/ik.h"
+#include "kphys/core/panda/multianimation.h"
+#include "kphys/core/panda/multianimator.h"
 #include "kphys/core/panda/spring.h"
 #include "kphys/core/panda/spring_v1.h"
 // #include "kphys/core/panda/spring_v2.h"
@@ -35,7 +37,9 @@ void init_libcore() {
     initialized = true;
 
     Animation::init_type();
+    MultiAnimation::init_type();
     AnimatorNode::init_type();
+    MultiAnimatorNode::init_type();
     BVHQ::init_type();
     BVHQJoint::init_type();
     Channel::init_type();

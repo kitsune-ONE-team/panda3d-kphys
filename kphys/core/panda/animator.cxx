@@ -47,7 +47,7 @@ PointerTo<Channel> AnimatorNode::get_channel(const char* name) {
 /**
    Put a reusable animation in the storage.
 */
-void AnimatorNode::put_animation(const char* name, Animation* animation) {
+void AnimatorNode::put_animation(const char* name, PointerTo<Animation> animation) {
     std::string s = std::string(name);
     _animations[s] = animation;
 }
