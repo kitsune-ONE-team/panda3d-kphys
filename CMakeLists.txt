@@ -111,7 +111,8 @@ if(${WITH_TESTS} MATCHES "ON")
 
   add_custom_command(
     OUTPUT kphys_tests__done
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests)
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests
+    DEPENDS kphys_tests)
   add_custom_target(
     kphys_tests__run ALL
     DEPENDS kphys_tests__done)

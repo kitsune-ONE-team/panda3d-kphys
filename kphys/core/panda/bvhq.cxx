@@ -54,7 +54,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 
     _frame_time = 0;
 
-    char* word = (char*) malloc(sizeof(char) * WORD_MAX_LEN);
+    char* word = (char*) malloc(sizeof(char) * (WORD_MAX_LEN + 1));
     char end = ' ';
     unsigned int exception = 0;
 
@@ -80,7 +80,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
             }
             end = _readword(word, WORD_MAX_LEN);  //  read bone name
 
-            char* name = (char*) malloc(sizeof(char) * strlen(word));
+            char* name = (char*) malloc(sizeof(char) * (strlen(word) + 1));
             strcpy(name, word);
 
             PointerTo<BVHQJoint> joint = new BVHQJoint(name);
@@ -108,7 +108,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
             for (unsigned short i = 0; i < bone_num_channels; i++) {
                 end = _readword(word, WORD_MAX_LEN);  // read channel
 
-                char* channel = (char*) malloc(sizeof(char) * strlen(word));
+                char* channel = (char*) malloc(sizeof(char) * (strlen(word) + 1));
                 strcpy(channel, word);
 
                 _hierarchy.back()->add_channel(channel);
@@ -316,8 +316,8 @@ char BVHQ::_readword(char* word, unsigned long size) {
     unsigned long i = 0;
     char c = '*';
 
-    while (c != ' ' && c != '\t' && c != '\n' && c != '\0' &&
-           i < (size - 1) && !_istream->eof()) {
+    while (c != ' ' && c != '\t' && c != '\n' && c != '\r' && c != '\0' &&
+           i < size && !_istream->eof()) {
         _istream->get(c);
         word[i++] = c;
     }

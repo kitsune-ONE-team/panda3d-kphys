@@ -4,6 +4,7 @@ mkdir -p build
 cd build
 cmake -G "Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX=/panda3d-kphys/lib/python3.11/site-packages \
+    -DMULTITHREADED_BUILD=16 \
     -DBULLET_INCLUDE_DIR=/root/jenkins/workspace/bullet-lynx64/dist/bullet/include \
     -DBULLET_LIBRARY_DIR=/root/jenkins/workspace/bullet-lynx64/dist/bullet/lib \
     -DINSTALL_PY=ON \
@@ -16,8 +17,8 @@ cmake -G "Unix Makefiles" \
     -DPYTHON_LIBRARY=/root/jenkins/workspace/python-lynx64/dist/python/lib/libpython3.11.so.1.0 \
     ..
 
-make
-make install DESTDIR=../dist/
+make -j 16
+make install DESTDIR=../dist/ -j 16
 
 cd ..
 
