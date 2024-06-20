@@ -54,7 +54,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 
     _frame_time = 0;
 
-    char word[WORD_MAX_LEN];
+    char* word = (char*) malloc(sizeof(char) * WORD_MAX_LEN);
     char end = ' ';
     unsigned int exception = 0;
 
@@ -299,6 +299,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
             }
 
     finally:
+        free(word);
         if (debug)
             printf("DONE\n");
         vfs->close_read_file(_istream);
