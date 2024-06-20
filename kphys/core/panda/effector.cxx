@@ -17,11 +17,13 @@
 TypeHandle EffectorNode::_type_handle;
 
 EffectorNode::EffectorNode(
-        const char* name, unsigned int chain_length, unsigned int priority):
-    PandaNode(name),
-    _chain_length(chain_length),
-    _priority(priority),
-    _ik_effector(NULL) {}
+        const char* name, unsigned int chain_length, unsigned int priority): PandaNode(name)
+        , _chain_length(chain_length)
+        , _priority(priority)
+#ifdef WITH_FABRIK
+        , _ik_effector(NULL)
+#endif
+{}
 
 unsigned int EffectorNode::get_chain_length() {
     return _chain_length;
@@ -45,14 +47,17 @@ double EffectorNode::get_weight() {
 
 void EffectorNode::set_weight(double weight) {
     _weight = weight;
+#ifdef WITH_FABRIK
     if (_ik_effector != NULL)
         _ik_effector->weight = weight;
+#endif
 }
 
 /**
  * Get IK effector. Returns a reference to an external library's structure.
  * [IK]
  */
+#ifdef WITH_FABRIK
 struct ik_effector_t* EffectorNode::get_ik_effector() {
     return _ik_effector;
 }
@@ -77,6 +82,7 @@ unsigned int EffectorNode::rebuild_ik(struct ik_solver_t* ik_solver, unsigned in
 
     return node_id;
 }
+#endif
 
 void EffectorNode::sync_p2ik_local() {
     NodePath effector = NodePath::any_path(this);
@@ -84,10 +90,12 @@ void EffectorNode::sync_p2ik_local() {
     NodePath chain_root = get_chain_root();
 
     // IK positions and rotations are relative to chain root
+#ifdef WITH_FABRIK
     if (_ik_effector != NULL) {
         _ik_effector->target_position = LVecBase3_to_IKVec3(effector.get_pos(chain_root));
         _ik_effector->target_rotation = LQuaternion_to_IKQuat(effector.get_quat(chain_root));
     }
+#endif
 
     // save world-space position and rotation
     _position = effector.get_pos(armature);

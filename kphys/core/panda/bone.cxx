@@ -2,7 +2,9 @@
 
 #include "nodePath.h"
 
+#ifdef WITH_FABRIK
 #include "ik/ik.h"
+#endif
 #include "kphys/core/panda/armature.h"
 #include "kphys/core/panda/bone.h"
 #include "kphys/core/panda/converters.h"
@@ -12,14 +14,16 @@
 
 TypeHandle BoneNode::_type_handle;
 
-BoneNode::BoneNode(const char* name, unsigned int bone_id):
-    PandaNode(name),
-    _bone_id(bone_id),
-    _axis(LVector3::zero()),
-    _min_ang(-M_PI),
-    _max_ang(M_PI),
-    _is_static(false),
-    _ik_node(NULL) {}
+BoneNode::BoneNode(const char* name, unsigned int bone_id): PandaNode(name)
+        , _bone_id(bone_id)
+        , _axis(LVector3::zero())
+        , _min_ang(-M_PI)
+        , _max_ang(M_PI)
+        , _is_static(false)
+#ifdef WITH_FABRIK
+        , _ik_node(NULL)
+#endif
+{}
 
 unsigned int BoneNode::get_bone_id() {
     return _bone_id;
@@ -89,6 +93,7 @@ double BoneNode::get_max_angle() {
  * Get IK node. Returns a reference to an external library's structure.
  * [IK]
  */
+#ifdef WITH_FABRIK
 struct ik_node_t* BoneNode::get_ik_node() {
     return _ik_node;
 }
@@ -115,14 +120,17 @@ unsigned int BoneNode::rebuild_ik_recursive(struct ik_solver_t* ik_solver, unsig
     node_id = children_rebuild_ik(bone, ik_solver, node_id);
     return node_id;
 }
+#endif
 
 void BoneNode::sync_p2ik_recursive() {
     NodePath bone = NodePath::any_path(this);
 
+#ifdef WITH_FABRIK
     if (_ik_node != NULL) {
         _ik_node->position = LVecBase3_to_IKVec3(bone.get_pos());
         _ik_node->rotation = LQuaternion_to_IKQuat(bone.get_quat());
     }
+#endif
 
     children_sync_p2ik(bone);
 }
@@ -130,8 +138,10 @@ void BoneNode::sync_p2ik_recursive() {
 void BoneNode::sync_ik2p_local() {
     NodePath bone = NodePath::any_path(this);
 
+#ifdef WITH_FABRIK
     if (_ik_node != NULL) {
         // bone.set_pos(IKVec3_to_LVecBase3(_ik_node->position));
         bone.set_quat(IKQuat_to_LQuaternion(_ik_node->rotation));
     }
+#endif
 }

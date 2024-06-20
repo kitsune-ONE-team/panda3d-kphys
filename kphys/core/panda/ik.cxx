@@ -4,6 +4,7 @@
 #include "kphys/core/panda/types.h"
 
 
+#ifdef WITH_FABRIK
 unsigned int children_rebuild_ik(
         NodePath np, struct ik_solver_t* ik_solver, unsigned int node_id) {
     for (int i = 0; i < np.get_num_children(); i++) {
@@ -16,6 +17,7 @@ unsigned int children_rebuild_ik(
     }
     return node_id;
 }
+#endif
 
 void children_sync_p2ik(NodePath np) {
     for (int i = 0; i < np.get_num_children(); i++) {

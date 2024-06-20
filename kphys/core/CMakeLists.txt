@@ -47,6 +47,22 @@ set(CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/types.h
 )
 
+set(CORE_LIBS
+  # PANDA3D
+  ${PANDA_LIBS}
+  # PYTHON
+  ${PYTHON_LIBRARY}
+  # BULLET
+  ${BULLET_COLLISION_LIBRARY}
+  ${BULLET_DYNAMICS_LIBRARY}
+  ${BULLET_MATH_LIBRARY}
+  ${BULLET_SOFTBODY_LIBRARY}
+)
+
+if(${WITH_FABRIK} MATCHES "ON")
+  set(CORE_LIBS ${CORE_LIBS} ik)
+endif()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_command(
@@ -84,18 +100,6 @@ if(WIN32)
   set_target_properties(core PROPERTIES SUFFIX ".pyd")
 endif()
 
-target_link_libraries(core
-  # PANDA3D
-  ${PANDA_LIBS}
-  # PYTHON
-  ${PYTHON_LIBRARY}
-  # BULLET
-  ${BULLET_COLLISION_LIBRARY}
-  ${BULLET_DYNAMICS_LIBRARY}
-  ${BULLET_MATH_LIBRARY}
-  ${BULLET_SOFTBODY_LIBRARY}
-  # IK
-  ik
-)
+target_link_libraries(core ${CORE_LIBS})
 
 install(TARGETS core DESTINATION ${CMAKE_INSTALL_PREFIX}/kphys)

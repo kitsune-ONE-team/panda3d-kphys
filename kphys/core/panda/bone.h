@@ -9,7 +9,9 @@
 
 #ifdef CPPPARSER  // interrogate
 #else  // normal compiler
+#ifdef WITH_FABRIK
 #include "ik/ik.h"
+#endif
 #endif
 
 #include "kphys/core/panda/ik.h"
@@ -33,12 +35,16 @@ private:
     double _min_ang;  // [CCDIK] min constraint angle
     double _max_ang;  // [CCDIK] max constraint angle
     bool _is_static;  // [CCDIK]
+#ifdef WITH_FABRIK
     struct ik_node_t* _ik_node;  // [IK] node
+#endif
     static TypeHandle _type_handle;
 
 public:
+#ifdef WITH_FABRIK
     struct ik_node_t* get_ik_node();
     unsigned int rebuild_ik_recursive(struct ik_solver_t* ik_solver, unsigned int node_id);
+#endif
     void sync_p2ik_recursive();
     void sync_ik2p_local();
 

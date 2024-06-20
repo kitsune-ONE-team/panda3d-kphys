@@ -4,6 +4,7 @@
 /**
  * Convert Panda3D LVecBase3 to IK Vec3.
  */
+#ifdef WITH_FABRIK
 ik_vec3_t LVecBase3_to_IKVec3(const LVecBase3& panda) {
     ik_vec3_t ret;
     ret.x = panda.get_x();
@@ -37,3 +38,4 @@ LVecBase3 IKVec3_to_LVecBase3(const ik_vec3_t& ik) {
 LQuaternion IKQuat_to_LQuaternion(const ik_quat_t& ik) {
     return LQuaternion(ik.w, ik.x, ik.y, ik.z);  // r, i, j, k
 }
+#endif

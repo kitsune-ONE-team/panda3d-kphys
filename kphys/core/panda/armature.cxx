@@ -10,10 +10,12 @@
 
 TypeHandle ArmatureNode::_type_handle;
 
-ArmatureNode::ArmatureNode(const char* name):
-        PandaNode(name),
-        _ik_engine(-1),
-        _ik_solver(NULL) {
+ArmatureNode::ArmatureNode(const char* name): PandaNode(name)
+        , _ik_engine(-1)
+#ifdef WITH_FABRIK
+        , _ik_solver(NULL)
+#endif
+{
 
     _bone_init_local = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
     _bone_init_inv = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
@@ -34,8 +36,10 @@ ArmatureNode::ArmatureNode(const char* name):
 }
 
 ArmatureNode::~ArmatureNode() {
+#ifdef WITH_FABRIK
     if (_ik_solver != NULL)
         ik.solver.destroy(_ik_solver);
+#endif
     _bones.clear();
 
     free(_bone_init_local);
@@ -83,6 +87,7 @@ void ArmatureNode::rebuild_ik(unsigned int ik_engine, unsigned int max_iteration
     _ik_engine = ik_engine;
     _ik_max_iterations = max_iterations;
 
+#ifdef WITH_FABRIK
     if (_ik_engine == IK_ENGINE_IK) {
         if (_ik_solver != NULL)
             ik.solver.destroy(_ik_solver);
@@ -95,6 +100,7 @@ void ArmatureNode::rebuild_ik(unsigned int ik_engine, unsigned int max_iteration
         NodePath armature = NodePath::any_path(this);
         children_rebuild_ik(armature, _ik_solver, 0);
     }
+#endif
 }
 
 /**
@@ -201,12 +207,14 @@ void ArmatureNode::solve_ik(unsigned int priority) {
     }
 
     switch (_ik_engine) {
+#ifdef WITH_FABRIK
     case IK_ENGINE_IK:
         ik.solver.set_tree(_ik_solver, ((BoneNode*) root_bone.node())->get_ik_node());
         ik.solver.rebuild(_ik_solver);
         ik.solver.solve(_ik_solver);
         ik.solver.unlink_tree(_ik_solver);
         break;
+#endif
 
     case IK_ENGINE_CCDIK:
         for (int i = 0; i < nps.get_num_paths(); i++) {

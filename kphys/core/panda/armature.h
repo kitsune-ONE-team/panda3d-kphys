@@ -9,7 +9,9 @@
 #ifdef CPPPARSER  // interrogate
 union LMatrix4Array;
 #else  // normal compiler
+#ifdef WITH_FABRIK
 #include "ik/ik.h"
+#endif
 #endif
 
 #include "kphys/core/panda/ik.h"
@@ -48,7 +50,9 @@ private:
     PointerTo<Texture> _bone_transform_tex;
     PointerTo<Texture> _bone_prev_transform_tex;
     int _frame_transform_indices[MAX_BONES];
+#ifdef WITH_FABRIK
     struct ik_solver_t* _ik_solver;  // [IK] solver engine
+#endif
     static TypeHandle _type_handle;
 
     void _update_matrices(NodePath np, LMatrix4 parent_mat, bool is_current=true);
@@ -62,6 +66,7 @@ public:
         return _type_handle;
     }
     static void init_type() {
+#ifdef WITH_FABRIK
         if (ik.init() == IK_OK) {
             if (ik.log.init() == IK_OK) {
 #ifdef IK_DEBUG
@@ -75,6 +80,7 @@ public:
         } else {
             // TODO: assert
         }
+#endif
 
         PandaNode::init_type();
         register_type(_type_handle, "ArmatureNode", PandaNode::get_class_type());

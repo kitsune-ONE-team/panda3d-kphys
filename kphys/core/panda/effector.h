@@ -6,7 +6,9 @@
 
 #ifdef CPPPARSER  // interrogate
 #else  // normal compiler
+#ifdef WITH_FABRIK
 #include "ik/ik.h"
+#endif
 #endif
 
 #include "kphys/core/panda/ccdik.h"
@@ -29,12 +31,16 @@ private:
     LVecBase3 _position;
     LQuaternion _rotation;
     double _weight;  // [IK] effector weight
+#ifdef WITH_FABRIK
     struct ik_effector_t* _ik_effector;  // [IK] effector
+#endif
     static TypeHandle _type_handle;
 
 public:
+#ifdef WITH_FABRIK
     struct ik_effector_t* get_ik_effector();
     unsigned int rebuild_ik(struct ik_solver_t* ik_solver, unsigned int node_id);
+#endif
     void sync_p2ik_local();
     void sync_ik2p_local();
     void sync_ik2p_chain_reverse();
