@@ -12,8 +12,6 @@
 #endif
 
 #define NUM_SLOTS 2
-/* #define SLOT_A 0 */
-/* #define SLOT_B 1 */
 
 
 BEGIN_PUBLISH

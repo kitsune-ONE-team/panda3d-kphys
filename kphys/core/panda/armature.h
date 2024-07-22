@@ -30,6 +30,7 @@ class EXPORT_CLASS ArmatureNode: public PandaNode {
 PUBLISHED:
     ArmatureNode(const char* name="armature");
     ~ArmatureNode();
+    void set_raw_transform(bool is_enabled);
     void cleanup();
     void reset();
     void rebuild_bind_pose();
@@ -43,10 +44,14 @@ PUBLISHED:
 private:
     unsigned int _ik_engine;
     unsigned int _ik_max_iterations;
+    bool _is_raw_transform;
     LMatrix4Array* _bone_init_local;  // initial local-space matrices
     LMatrix4Array* _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
     LMatrix4Array* _bone_transform;  // current world-space matrices
+    float _bone_id_tree[MAX_BONES][MAX_BONES];
     pmap<std::string, NodePath> _bones;
+    PointerTo<Texture> _bone_init_inv_tex;
+    PointerTo<Texture> _bone_id_tree_tex;
     PointerTo<Texture> _bone_transform_tex;
     PointerTo<Texture> _bone_prev_transform_tex;
     int _frame_transform_indices[MAX_BONES];
@@ -56,6 +61,7 @@ private:
     static TypeHandle _type_handle;
 
     void _update_matrices(NodePath np, LMatrix4 parent_mat, bool is_current=true);
+    void _update_id_tree(NodePath np);
 
 public:
     void solve_ik(unsigned int priority);

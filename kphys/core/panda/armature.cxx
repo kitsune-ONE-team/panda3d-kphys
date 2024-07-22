@@ -12,14 +12,19 @@ TypeHandle ArmatureNode::_type_handle;
 
 ArmatureNode::ArmatureNode(const char* name): PandaNode(name)
         , _ik_engine(-1)
+        , _is_raw_transform(false)
 #ifdef WITH_FABRIK
         , _ik_solver(NULL)
 #endif
 {
-
     _bone_init_local = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
     _bone_init_inv = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
     _bone_transform = (LMatrix4Array*) malloc(sizeof(LMatrix4Array));
+
+    _bone_init_inv_tex = new Texture();
+    _bone_init_inv_tex->setup_buffer_texture(
+        RGBA_MAT4_SIZE * MAX_BONES, Texture::T_float,
+        Texture::F_rgba32, GeomEnums::UH_static);
 
     _bone_transform_tex = new Texture();
     _bone_transform_tex->setup_buffer_texture(
@@ -29,6 +34,11 @@ ArmatureNode::ArmatureNode(const char* name): PandaNode(name)
     _bone_prev_transform_tex = new Texture();
     _bone_prev_transform_tex->setup_buffer_texture(
         RGBA_MAT4_SIZE * MAX_BONES, Texture::T_float,
+        Texture::F_rgba32, GeomEnums::UH_static);
+
+    _bone_id_tree_tex = new Texture();
+    _bone_id_tree_tex->setup_buffer_texture(
+        MAX_BONES * MAX_BONES * FLOAT_SIZE, Texture::T_float,
         Texture::F_rgba32, GeomEnums::UH_static);
 
     for (unsigned int i = 0; i < MAX_BONES; i++)
@@ -47,8 +57,14 @@ ArmatureNode::~ArmatureNode() {
     free(_bone_transform);
 }
 
+void ArmatureNode::set_raw_transform(bool is_enabled) {
+    _is_raw_transform = is_enabled;
+}
+
 void ArmatureNode::cleanup() {
     NodePath armature = NodePath::any_path(this);
+    armature.clear_shader_input("bone_init_inv_tex");
+    armature.clear_shader_input("bone_id_tree_tex");
     armature.clear_shader_input("bone_transform_tex");
     armature.clear_shader_input("bone_prev_transform_tex");
 }
@@ -80,7 +96,18 @@ void ArmatureNode::reset() {
 
 void ArmatureNode::rebuild_bind_pose() {
     NodePath armature = NodePath::any_path(this);
+
     _update_matrices(armature, LMatrix4::ident_mat(), 0);
+
+    PTA_uchar data = _bone_init_inv_tex->modify_ram_image();
+    memcpy(data.p(), _bone_init_inv->data, sizeof(_bone_init_inv->data));
+    armature.set_shader_input("bone_init_inv_tex", _bone_init_inv_tex);
+
+    _update_id_tree(armature);
+
+    data = _bone_id_tree_tex->modify_ram_image();
+    memcpy(data.p(), _bone_id_tree, sizeof(_bone_id_tree));
+    armature.set_shader_input("bone_id_tree_tex", _bone_id_tree_tex);
 }
 
 void ArmatureNode::rebuild_ik(unsigned int ik_engine, unsigned int max_iterations) {
@@ -162,9 +189,23 @@ void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, bool is_cu
         mat = np.get_mat() * parent_mat;  // get world-space matrix
 
         if (is_current) {  // current matrices
-            // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_020_Skins.md#the-joint-matrices
-            set_matrix(_bone_transform, bone_id, get_matrix(_bone_init_inv, bone_id) * mat);
-
+            if (_is_raw_transform) {
+                LQuaternion quat = np.get_quat();
+                LMatrix4 pos_quat_scale = LMatrix4::ident_mat();
+                pos_quat_scale.set_row(0, np.get_pos());
+                pos_quat_scale.set_row(1, LVector4(
+                    quat.get_i(),
+                    quat.get_j(),
+                    quat.get_k(),
+                    quat.get_r()
+                ));
+                pos_quat_scale.set_row(2, np.get_scale());
+                set_matrix(_bone_transform, bone_id, pos_quat_scale);
+            } else {
+                // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_020_Skins.md#the-joint-matrices
+                LMatrix4 inv_mat = get_matrix(_bone_init_inv, bone_id);
+                set_matrix(_bone_transform, bone_id, inv_mat * mat);
+            }
         } else {  // initial matrices
             set_matrix(_bone_init_local, bone_id, np.get_mat());
             LMatrix4 inv_mat;
@@ -177,6 +218,38 @@ void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, bool is_cu
         NodePath child_np = np.get_child(i);
         if (is_bone(child_np))
             _update_matrices(child_np, mat, is_current);
+    }
+}
+
+/**
+ * Fill bone IDs array with parent's IDs
+ * by recursively walking through the node graph.
+ */
+void ArmatureNode::_update_id_tree(NodePath armature) {
+    for (int i = 0; i < MAX_BONES; i++) {
+        for (int j = 0; j < MAX_BONES; j++) {
+            _bone_id_tree[i][j] = -1;
+        }
+    }
+
+    NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
+    for (int i = 0; i < bones.get_num_paths(); i++) {
+        NodePath bone = bones.get_path(i);
+        unsigned int bone_id = ((BoneNode*) bone.node())->get_bone_id();
+
+        // walk from child to parent
+        unsigned int row[MAX_BONES];
+        int j = 0;
+        for (j = 0; j < MAX_BONES && is_bone(bone); j++) {
+            row[j] = ((BoneNode*) bone.node())->get_bone_id();
+            bone = bone.get_parent();
+        }
+        j--;
+
+        // reverse the row from parent to child
+        for (int k = 0; j >= 0; j--, k++) {
+            _bone_id_tree[bone_id][k] = row[j];
+        }
     }
 }
 

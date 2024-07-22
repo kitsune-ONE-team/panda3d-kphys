@@ -17,6 +17,7 @@ class ActorSample(ShowBase):
     def __init__(self):
         load_prc_file_data('', '''
             framebuffer-alpha f
+            show-frame-rate-meter t
             win-size 1280 720
         ''')
 
@@ -62,9 +63,11 @@ class ActorSample(ShowBase):
             for bone in actor.find_all_matches('**/+EffectorNode'):
                 make_empty(parent=bone)
 
+            # actor.node().set_raw_transform(True)
             actor.node().rebuild_bind_pose()
             if i == 0:
-                actor.node().rebuild_ik(IK_ENGINE_IK)
+                # actor.node().rebuild_ik(IK_ENGINE_IK)
+                actor.node().rebuild_ik(IK_ENGINE_CCDIK)
                 text = OnscreenText(
                     text='FABRIK', pos=(i - 0.5, 0.75), align=TextNode.ACenter,
                     parent=self.render2d)
