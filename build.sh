@@ -1,31 +1,26 @@
-#!/bin/sh
+!/bin/sh
+# build module into SDK
+
+PYTHON_VERSION=3.13t
 
 mkdir -p build
 cd build
 cmake -G "Unix Makefiles" \
-    -DCMAKE_INSTALL_PREFIX=/panda3d-kphys/lib/python3.11/site-packages \
-    -DMULTITHREADED_BUILD=16 \
-    -DBULLET_INCLUDE_DIR=/root/jenkins/workspace/bullet-lynx64/dist/bullet/include \
-    -DBULLET_LIBRARY_DIR=/root/jenkins/workspace/bullet-lynx64/dist/bullet/lib \
+    -DBULLET_INCLUDE_DIR=/app/opt/bullet/include \
+    -DBULLET_LIBRARY_DIR=/app/opt/bullet/lib \
+    -DCMAKE_INSTALL_PREFIX=/app/opt/sdk/lib/python${PYTHON_VERSION}/site-packages \
     -DINSTALL_PY=ON \
+    -DMULTITHREADED_BUILD=16 \
+    -DPANDA_BINARY_DIR=/app/opt/sdk/bin \
+    -DPANDA_INCLUDE_DIR=/app/opt/sdk/include \
+    -DPANDA_LIBRARY_DIR=/app/opt/sdk/lib \
+    -DPYTHON_EXECUTABLE=/app/opt/sdk/bin/python${PYTHON_VERSION} \
+    -DPYTHON_INCLUDE_DIR=/app/opt/sdk/include/python${PYTHON_VERSION} \
+    -DPYTHON_LIBRARY=/app/opt/sdk/lib/libpython${PYTHON_VERSION}.so.1.0 \
     -DWITH_TESTS=ON \
-    -DPANDA_BINARY_DIR=/root/jenkins/workspace/panda3d-lynx64/dist/panda3d/bin \
-    -DPANDA_INCLUDE_DIR=/root/jenkins/workspace/panda3d-lynx64/dist/panda3d/include \
-    -DPANDA_LIBRARY_DIR=/root/jenkins/workspace/panda3d-lynx64/dist/panda3d/lib \
-    -DPYTHON_INCLUDE_DIR=/root/jenkins/workspace/python-lynx64/dist/python/include/python3.11 \
-    -DPYTHON_EXECUTABLE=/root/jenkins/workspace/python-lynx64/dist/python/bin/python3.11 \
-    -DPYTHON_LIBRARY=/root/jenkins/workspace/python-lynx64/dist/python/lib/libpython3.11.so.1.0 \
     ..
 
-make -j 16
-make install DESTDIR=../dist/ -j 16
+make -j 16 ${*}
+make install -j 16 ${*}
 
 cd ..
-
-export PYTHONPATH=\
-/root/jenkins/workspace/panda3d-lynx64/dist/panda3d/lib/python3.11/site-packages:\
-dist/panda3d-kphys/lib/python3.11/site-packages
-
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/root/jenkins/workspace/panda3d-lynx64/dist/panda3d/lib
-
-/root/jenkins/workspace/python-lynx64/dist/python/bin/python3.11 samples/animation.py

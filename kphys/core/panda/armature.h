@@ -34,10 +34,12 @@ PUBLISHED:
     void cleanup();
     void reset();
     void rebuild_bind_pose();
+    void rebuild_bind_pose(NodePath np);
     void rebuild_ik(unsigned int ik_engine=IK_ENGINE_IK, unsigned int max_iterations=10);
     void update_ik();
     void update_ik(unsigned int priority);
     void update_shader_inputs();
+    void update_shader_inputs(NodePath np);
     NodePath find_bone(const char* name);
     void apply(PointerTo<Frame> frame, bool local_space=true);
 

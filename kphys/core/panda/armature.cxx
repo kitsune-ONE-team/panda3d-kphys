@@ -96,18 +96,22 @@ void ArmatureNode::reset() {
 
 void ArmatureNode::rebuild_bind_pose() {
     NodePath armature = NodePath::any_path(this);
+    rebuild_bind_pose(armature);
+}
 
+void ArmatureNode::rebuild_bind_pose(NodePath np) {
+    NodePath armature = NodePath::any_path(this);
     _update_matrices(armature, LMatrix4::ident_mat(), 0);
 
     PTA_uchar data = _bone_init_inv_tex->modify_ram_image();
     memcpy(data.p(), _bone_init_inv->data, sizeof(_bone_init_inv->data));
-    armature.set_shader_input("bone_init_inv_tex", _bone_init_inv_tex);
+    np.set_shader_input("bone_init_inv_tex", _bone_init_inv_tex);
 
     _update_id_tree(armature);
 
     data = _bone_id_tree_tex->modify_ram_image();
     memcpy(data.p(), _bone_id_tree, sizeof(_bone_id_tree));
-    armature.set_shader_input("bone_id_tree_tex", _bone_id_tree_tex);
+    np.set_shader_input("bone_id_tree_tex", _bone_id_tree_tex);
 }
 
 void ArmatureNode::rebuild_ik(unsigned int ik_engine, unsigned int max_iterations) {
@@ -165,16 +169,22 @@ void ArmatureNode::update_ik(unsigned int priority) {
  */
 void ArmatureNode::update_shader_inputs() {
     NodePath armature = NodePath::any_path(this);
+    update_shader_inputs(armature);
+}
 
+/**
+ * Update shader inputs with world space bone matrices on specified node path.
+ */
+void ArmatureNode::update_shader_inputs(NodePath np) {
     PTA_uchar data = _bone_prev_transform_tex->modify_ram_image();
     memcpy(data.p(), _bone_transform->data, sizeof(_bone_transform->data));
-    armature.set_shader_input("bone_prev_transform_tex", _bone_prev_transform_tex);
+    np.set_shader_input("bone_prev_transform_tex", _bone_prev_transform_tex);
 
-    _update_matrices(armature, LMatrix4::ident_mat(), 1);
+    _update_matrices(np, LMatrix4::ident_mat(), 1);
 
     data = _bone_transform_tex->modify_ram_image();
     memcpy(data.p(), _bone_transform->data, sizeof(_bone_transform->data));
-    armature.set_shader_input("bone_transform_tex", _bone_transform_tex);
+    np.set_shader_input("bone_transform_tex", _bone_transform_tex);
 }
 
 /**
