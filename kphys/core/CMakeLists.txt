@@ -71,7 +71,7 @@ add_custom_command(
   -I${CMAKE_SOURCE_DIR}
   -I${PANDA_INCLUDE_DIR}/panda3d
   -S${CMAKE_SOURCE_DIR}
-  -S${PANDA_INCLUDE_DIR}/panda3d/parser-inc
+  -S${INTERROGATE_INCLUDE_DIR}/parser-inc
   -oc core_igate.cpp
   -od core.in
   -fnames -string -refcount -assert -python-native -nomangle

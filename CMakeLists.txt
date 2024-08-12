@@ -41,6 +41,7 @@ endif()
 
 if(EXISTS "${PANDA_LIBRARY_DIR}")
 else()
+  find_path(INTERROGATE_INCLUDE_DIR NAMES parser-inc/Python.h)
   find_path(PANDA_INCLUDE_DIR NAMES panda3d/pandaSystem.h)
   find_path(PANDA_BINARY_DIR NAMES interrogate interrogate.exe)
   find_library(PANDAFRAMEWORK_LIBRARY_PATH NAMES libp3framework.so libp3framework.lib p3framework.lib)
