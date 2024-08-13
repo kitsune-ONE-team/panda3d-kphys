@@ -57,44 +57,47 @@ else()
   set(INTERROGATE_MODULE env LD_LIBRARY_PATH=${PANDA_LIBRARY_DIR} ${PANDA_BINARY_DIR}/interrogate_module)
 endif()
 
-if((EXISTS "${PANDA_LIBRARY_DIR}/libpandabullet.so") OR (EXISTS "${PANDA_LIBRARY_DIR}/libpandabullet.lib"))
-  # makepanda build
-  if(WIN32)
+if(WIN32)
+  if(EXISTS "${PANDA_LIBRARY_DIR}/libp3framework.lib")
     set(PANDA_PREFIX "lib")
   else()
     set(PANDA_PREFIX "")
   endif()
-  set(PANDA_LIBS
-    # PRIMARY
-    ${PANDA_PREFIX}p3framework
-    # COMMON_PANDA_LIBS
-    ${PANDA_PREFIX}panda
-    ${PANDA_PREFIX}pandaexpress
-    # COMMON_DTOOL_LIBS
-    ${PANDA_PREFIX}p3dtool
-    ${PANDA_PREFIX}p3dtoolconfig
-    # EXTRA
-    ${PANDA_PREFIX}p3direct
-    ${PANDA_PREFIX}p3interrogatedb
-    # PANDABULLET
-    ${PANDA_PREFIX}pandabullet)
-
 else()
-  # cmake build
+  set(PANDA_PREFIX "")
+endif()
+
+set(PANDA_LIBS
+  # PRIMARY
+  ${PANDA_PREFIX}p3framework
+  # COMMON_PANDA_LIBS
+  ${PANDA_PREFIX}panda
+  ${PANDA_PREFIX}pandaexpress
+  # COMMON_DTOOL_LIBS
+  ${PANDA_PREFIX}p3dtool
+  ${PANDA_PREFIX}p3dtoolconfig
+  # EXTRA
+  ${PANDA_PREFIX}p3direct
+  ${PANDA_PREFIX}p3interrogatedb
+)
+
+if(WIN32)
+  if(EXISTS "${PANDA_LIBRARY_DIR}/libp3bullet.lib")
+    set(PANDA_LIBS
+      ${PANDA_LIBS}
+      libp3bullet
+    )
+  else()
+    set(PANDA_LIBS
+      ${PANDA_LIBS}
+      p3bullet
+    )
+  endif()
+else()
   set(PANDA_LIBS
-    # PRIMARY
-    p3framework
-    # COMMON_PANDA_LIBS
-    panda
-    pandaexpress
-    # COMMON_DTOOL_LIBS
-    p3dtool
-    p3dtoolconfig
-    # EXTRA
-    p3direct
-    p3interrogatedb
-    # PANDABULLET
-    p3bullet)
+    ${PANDA_LIBS}
+    p3bullet
+  )
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR})
