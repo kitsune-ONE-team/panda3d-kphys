@@ -8,10 +8,10 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN/../../..")
 if(WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  add_definitions("/wd4996 /wd4275 /wd4267 /wd4101 /wd4273")
+  add_definitions("/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 /GR-")
 else()
-  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11")
+  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fno-rtti")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11 -fno-rtti")
 endif()
 
 if(EXISTS "${PYTHON_LIBRARY}")
@@ -115,7 +115,7 @@ if(${WITH_TESTS} MATCHES "ON")
 
   add_custom_command(
     OUTPUT kphys_tests__done
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests
+    COMMAND env LD_LIBRARY_PATH=${PANDA_LIBRARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/kphys_tests
     DEPENDS kphys_tests)
   add_custom_target(
     kphys_tests__run ALL
