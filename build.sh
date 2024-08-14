@@ -10,9 +10,10 @@ cmake -G "Unix Makefiles" \
     -DBULLET_LIBRARY_DIR=/app/opt/bullet/lib \
     -DCMAKE_INSTALL_PREFIX=/app/opt/sdk/lib/python${PYTHON_VERSION}/site-packages \
     -DINSTALL_PY=ON \
-    -DINTERROGATE_INCLUDE_DIR=/app/build/panda3d/interrogate/src/panda3d-interrogate \
+    -DINTERROGATE_EXECUTABLE=/app/opt/interrogate/bin/interrogate \
+    -DINTERROGATE_MODULE_EXECUTABLE=/app/opt/interrogate/bin/interrogate_module \
+    -DINTERROGATE_SOURCE_DIR=/app/jenkins/workspace/interrogate-lynx64 \
     -DMULTITHREADED_BUILD=16 \
-    -DPANDA_BINARY_DIR=/app/build/panda3d/interrogate/src/panda3d-interrogate-build/bin \
     -DPANDA_INCLUDE_DIR=/app/opt/panda3d/include \
     -DPANDA_LIBRARY_DIR=/app/opt/panda3d/lib \
     -DPYTHON_EXECUTABLE=/app/opt/python/bin/python${PYTHON_VERSION} \
