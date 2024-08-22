@@ -19,9 +19,10 @@ typedef union LMatrix4Array {
 
 LMatrix4 get_matrix(LMatrix4Array* array, unsigned short i);
 void set_matrix(LMatrix4Array* array, unsigned short i, LMatrix4 matrix);
-int is_armature(NodePath np);
-int is_bone(NodePath np);
-int is_effector(NodePath np);
+bool is_armature(NodePath np);
+bool is_bone(NodePath np);
+bool is_effector(NodePath np);
+bool is_animator(NodePath np);
 NodePath get_armature(NodePath np);
 
 #endif

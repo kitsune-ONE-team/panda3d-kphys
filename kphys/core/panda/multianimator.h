@@ -2,6 +2,7 @@
 #define PANDA_MULTI_ANIMATOR_H
 
 #include "kphys/core/panda/animator.h"
+#include "kphys/core/panda/multianimation.h"
 
 
 class EXPORT_CLASS MultiAnimatorNode: public AnimatorNode {

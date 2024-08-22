@@ -17,6 +17,8 @@
 #include "kphys/core/panda/ik.h"
 #include "kphys/core/panda/multianimation.h"
 #include "kphys/core/panda/multianimator.h"
+#include "kphys/core/panda/puppet.h"
+#include "kphys/core/panda/puppetmaster.h"
 #include "kphys/core/panda/spring.h"
 #include "kphys/core/panda/spring_v1.h"
 // #include "kphys/core/panda/spring_v2.h"
@@ -44,6 +46,8 @@ void init_libcore() {
     BVHQJoint::init_type();
     Channel::init_type();
     Frame::init_type();
+    Puppet::init_type();
+    PuppetMasterNode::init_type();
 
     ControllerNode::init_type();
     Hit::init_type();

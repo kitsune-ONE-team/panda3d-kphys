@@ -1,6 +1,8 @@
+#include "kphys/core/panda/animator.h"
 #include "kphys/core/panda/armature.h"
 #include "kphys/core/panda/bone.h"
 #include "kphys/core/panda/effector.h"
+#include "kphys/core/panda/multianimator.h"
 #include "kphys/core/panda/types.h"
 
 
@@ -12,25 +14,22 @@ void set_matrix(LMatrix4Array* array, unsigned short i, LMatrix4 matrix) {
     array->matrices[i] = matrix;
 }
 
-int is_armature(NodePath np) {
-    if (((PandaNode*) np.node())->is_of_type(ArmatureNode::get_class_type()))
-        return 1;
-    else
-        return 0;
+bool is_armature(NodePath np) {
+    return ((PandaNode*) np.node())->is_of_type(ArmatureNode::get_class_type());
 }
 
-int is_bone(NodePath np) {
-    if (((PandaNode*) np.node())->is_of_type(BoneNode::get_class_type()))
-        return 1;
-    else
-        return 0;
+bool is_bone(NodePath np) {
+    return ((PandaNode*) np.node())->is_of_type(BoneNode::get_class_type());
 }
 
-int is_effector(NodePath np) {
-    if (((PandaNode*) np.node())->is_of_type(EffectorNode::get_class_type()))
-        return 1;
-    else
-        return 0;
+bool is_effector(NodePath np) {
+    return ((PandaNode*) np.node())->is_of_type(EffectorNode::get_class_type());
+}
+
+bool is_animator(NodePath np) {
+    return (
+        ((PandaNode*) np.node())->is_of_type(AnimatorNode::get_class_type()) ||
+        ((PandaNode*) np.node())->is_of_type(MultiAnimatorNode::get_class_type()));
 }
 
 NodePath get_armature(NodePath np) {
