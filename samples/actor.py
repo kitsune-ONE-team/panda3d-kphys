@@ -8,7 +8,7 @@ from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import load_prc_file_data, NodePath, Shader, TextNode
 
 from kphys.core import EffectorNode, IK_ENGINE_IK, IK_ENGINE_CCDIK
-from kphys.loader import load_actor
+from kphys.loader import load_model
 
 from common import make_empty
 
@@ -33,9 +33,9 @@ class ActorSample(ShowBase):
             'right': [],
         }
         self._texts = []
-        for i in range(2):
+        for i in range(1):
             filepath = os.path.join(os.path.dirname(__file__), 'yuki', 'scene.gltf')
-            node = load_actor(filepath)
+            node = load_model(filepath)
             scene = NodePath(node)
             actor = scene.find('**/+ArmatureNode')
             actor.reparent_to(self.render)
@@ -63,19 +63,21 @@ class ActorSample(ShowBase):
             for bone in actor.find_all_matches('**/+EffectorNode'):
                 make_empty(parent=bone)
 
-            # actor.node().set_raw_transform(True)
             actor.node().rebuild_bind_pose()
             if i == 0:
-                # actor.node().rebuild_ik(IK_ENGINE_IK)
                 actor.node().rebuild_ik(IK_ENGINE_CCDIK)
                 text = OnscreenText(
-                    text='FABRIK', pos=(i - 0.5, 0.75), align=TextNode.ACenter,
+                    text='CCD',
+                    pos=(i - 0.5, 0.75),
+                    align=TextNode.ACenter,
                     parent=self.render2d)
                 self._texts.append(text)
             else:
-                actor.node().rebuild_ik(IK_ENGINE_CCDIK)
+                actor.node().rebuild_ik(IK_ENGINE_IK)
                 text = OnscreenText(
-                    text='CCD', pos=(i - 0.5, 0.75), align=TextNode.ACenter,
+                    text='FABRIK',
+                    pos=(i - 0.5, 0.75),
+                    align=TextNode.ACenter,
                     parent=self.render2d)
                 self._texts.append(text)
 
