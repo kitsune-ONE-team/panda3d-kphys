@@ -38,6 +38,8 @@ if __name__ == "__main__":
         license='MIT',
         packages=[
             'kphys',
+            'kphys.gltf',
+            'kphys.gltf.mixins',
         ],
         install_requires=['panda3d'],
         ext_modules=[

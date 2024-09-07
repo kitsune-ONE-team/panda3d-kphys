@@ -2,14 +2,14 @@ if(${INSTALL_PY} MATCHES "ON")
   install(
     FILES
     __init__.py
-    loader.py
-    viewer.py
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/kphys
+    converter.py
+    parseutils.py
+    spec.py
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/kphys/gltf
     PERMISSIONS
     OWNER_READ OWNER_WRITE
     GROUP_READ
     WORLD_READ)
 endif()
 
-add_subdirectory(core)
-add_subdirectory(gltf)
+add_subdirectory(mixins)
