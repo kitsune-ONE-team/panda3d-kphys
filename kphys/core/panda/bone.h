@@ -47,6 +47,7 @@ public:
 #endif
     void sync_p2ik_recursive();
     void sync_ik2p_local();
+    virtual void output(std::ostream &out) const;
 
     static TypeHandle get_class_type() {
         return _type_handle;

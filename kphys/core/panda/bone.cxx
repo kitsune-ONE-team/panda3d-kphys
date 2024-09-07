@@ -110,7 +110,7 @@ unsigned int BoneNode::rebuild_ik_recursive(struct ik_solver_t* ik_solver, unsig
         _ik_node = ik_solver->node->create(node_id);
         node_id++;
 
-    } else if (is_bone(parent_bone)) {
+    } else if (is_any_bone(parent_bone)) {
         // parent is bone, so this bone becomes child bone
         _ik_node = ik_solver->node->create_child(
             ((BoneNode*) parent_bone.node())->get_ik_node(), node_id);
@@ -144,4 +144,10 @@ void BoneNode::sync_ik2p_local() {
         bone.set_quat(IKQuat_to_LQuaternion(_ik_node->rotation));
     }
 #endif
+}
+
+void BoneNode::output(std::ostream &out) const {
+    PandaNode::output(out);
+    out << " (ID: " << _bone_id << ")";
+
 }

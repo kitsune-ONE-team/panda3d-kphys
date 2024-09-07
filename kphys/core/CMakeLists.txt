@@ -19,9 +19,10 @@ set(CORE_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/multianimator.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/puppet.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/puppetmaster.cxx
-  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v1.cxx
-  # ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v2.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring2.cxx
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/types.cxx
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/wigglebone.cxx
 )
 
 set(CORE_HEADERS
@@ -46,9 +47,9 @@ set(CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/puppet.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/puppetmaster.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v1.h
-  # ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring_v2.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/spring2.h
   ${CMAKE_CURRENT_SOURCE_DIR}/panda/types.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/panda/wigglebone.h
 )
 
 set(CORE_LIBS

@@ -3,6 +3,7 @@
 
 #include "kphys/core/panda/armature.h"
 #include "kphys/core/panda/bone.h"
+#include "kphys/core/panda/wigglebone.h"
 #include "kphys/core/panda/effector.h"
 #include "kphys/core/panda/ik.h"
 #include "kphys/core/panda/types.h"
@@ -69,7 +70,7 @@ void ArmatureNode::cleanup() {
     armature.clear_shader_input("bone_prev_transform_tex");
 }
 
-void ArmatureNode::reset() {
+void ArmatureNode::reset(bool all) {
     NodePath armature = NodePath::any_path(this);
     NodePathCollection effectors = armature.find_all_matches("**/+EffectorNode");
     NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
@@ -83,6 +84,8 @@ void ArmatureNode::reset() {
     // reset bones
     for (int i = 0; i < bones.get_num_paths(); i++) {
         NodePath np = bones.get_path(i);
+        if (!is_bone(np) && !all)
+            continue;
         unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
         np.set_mat(get_matrix(_bone_init_local, bone_id));
     }
@@ -192,11 +195,14 @@ void ArmatureNode::update_shader_inputs(NodePath np) {
  * by recursively walking through the node graph.
  */
 void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, bool is_current) {
-    LMatrix4 mat = LMatrix4::ident_mat();
+    LMatrix4 mat = parent_mat;
 
-    if (is_bone(np)) {
+    if (is_any_bone(np) || is_rigid_body(np)) {
+        mat = np.get_mat() * mat;  // get world-space matrix
+    }
+
+    if (is_any_bone(np)) {
         unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
-        mat = np.get_mat() * parent_mat;  // get world-space matrix
 
         if (is_current) {  // current matrices
             if (_is_raw_transform) {
@@ -226,8 +232,28 @@ void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, bool is_cu
 
     for (int i = 0; i < np.get_num_children(); i++) {
         NodePath child_np = np.get_child(i);
-        if (is_bone(child_np))
-            _update_matrices(child_np, mat, is_current);
+        _update_matrices(child_np, mat, is_current);
+    }
+}
+
+void ArmatureNode::update_wiggle_bones(NodePath root_np, double dt) {
+    NodePath armature = NodePath::any_path(this);
+    _update_wiggle_bones(root_np, armature, dt);
+}
+
+/**
+ * Update wiggle bones by recursively walking through the node graph.
+ */
+void ArmatureNode::_update_wiggle_bones(NodePath root_np, NodePath np, double dt) {
+    if (is_wiggle_bone(np)) {
+        unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
+        LMatrix4 mat = get_matrix(_bone_init_local, bone_id);
+        ((WiggleBoneNode*) np.node())->update(root_np, mat, dt);
+    }
+
+    for (int i = 0; i < np.get_num_children(); i++) {
+        NodePath child_np = np.get_child(i);
+        _update_wiggle_bones(root_np, child_np, dt);
     }
 }
 
@@ -250,7 +276,7 @@ void ArmatureNode::_update_id_tree(NodePath armature) {
         // walk from child to parent
         unsigned int row[MAX_BONES];
         int j = 0;
-        for (j = 0; j < MAX_BONES && is_bone(bone); j++) {
+        for (j = 0; j < MAX_BONES && is_any_bone(bone); j++) {
             row[j] = ((BoneNode*) bone.node())->get_bone_id();
             bone = bone.get_parent();
         }
@@ -271,7 +297,7 @@ void ArmatureNode::solve_ik(unsigned int priority) {
     NodePath root_bone = NodePath::not_found();
     for (int i = 0; i < armature.get_num_children(); i++) {
         NodePath child = armature.get_child(i);
-        if (is_bone(child)) {
+        if (is_any_bone(child)) {
             root_bone = child;
             break;
         }

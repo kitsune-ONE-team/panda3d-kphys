@@ -32,7 +32,7 @@ PUBLISHED:
     ~ArmatureNode();
     void set_raw_transform(bool is_enabled);
     void cleanup();
-    void reset();
+    void reset(bool all=false);
     void rebuild_bind_pose();
     void rebuild_bind_pose(NodePath np);
     void rebuild_ik(unsigned int ik_engine=IK_ENGINE_IK, unsigned int max_iterations=10);
@@ -40,6 +40,7 @@ PUBLISHED:
     void update_ik(unsigned int priority);
     void update_shader_inputs();
     void update_shader_inputs(NodePath np);
+    void update_wiggle_bones(NodePath root_np, double dt);
     NodePath find_bone(const char* name);
     void apply(PointerTo<Frame> frame, bool local_space=true);
 
@@ -64,6 +65,7 @@ private:
 
     void _update_matrices(NodePath np, LMatrix4 parent_mat, bool is_current=true);
     void _update_id_tree(NodePath np);
+    void _update_wiggle_bones(NodePath root_np, NodePath np, double dt);
 
 public:
     void solve_ik(unsigned int priority);

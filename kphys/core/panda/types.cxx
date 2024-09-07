@@ -1,6 +1,9 @@
+#include "bulletRigidBodyNode.h"
+
 #include "kphys/core/panda/animator.h"
 #include "kphys/core/panda/armature.h"
 #include "kphys/core/panda/bone.h"
+#include "kphys/core/panda/wigglebone.h"
 #include "kphys/core/panda/effector.h"
 #include "kphys/core/panda/multianimator.h"
 #include "kphys/core/panda/types.h"
@@ -20,6 +23,18 @@ bool is_armature(NodePath np) {
 
 bool is_bone(NodePath np) {
     return ((PandaNode*) np.node())->is_of_type(BoneNode::get_class_type());
+}
+
+bool is_wiggle_bone(NodePath np) {
+    return ((PandaNode*) np.node())->is_of_type(WiggleBoneNode::get_class_type());
+}
+
+bool is_any_bone(NodePath np) {
+    return is_bone(np) || is_wiggle_bone(np);
+}
+
+bool is_rigid_body(NodePath np) {
+    return ((PandaNode*) np.node())->is_of_type(BulletRigidBodyNode::get_class_type());
 }
 
 bool is_effector(NodePath np) {

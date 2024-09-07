@@ -20,9 +20,9 @@
 #include "kphys/core/panda/puppet.h"
 #include "kphys/core/panda/puppetmaster.h"
 #include "kphys/core/panda/spring.h"
-#include "kphys/core/panda/spring_v1.h"
-// #include "kphys/core/panda/spring_v2.h"
+#include "kphys/core/panda/spring2.h"
 #include "kphys/core/panda/types.h"
+#include "kphys/core/panda/wigglebone.h"
 
 
 Configure(config_core);
@@ -57,6 +57,7 @@ void init_libcore() {
 
     ArmatureNode::init_type();
     BoneNode::init_type();
+    WiggleBoneNode::init_type();
     EffectorNode::init_type();
 
     return;

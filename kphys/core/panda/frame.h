@@ -17,6 +17,10 @@ enum TransformComponent {
 };
 END_PUBLISH
 
+LVecBase3 mix3(const LVecBase3& a, const LVecBase3& b, double factor);
+LQuaternion quat_nlerp(const LQuaternion& a, const LQuaternion& b, double factor);
+LQuaternion quat_slerp(const LQuaternion& a, const LQuaternion& b, double factor);
+
 
 class EXPORT_CLASS Frame: public TypedReferenceCount {
 PUBLISHED:
