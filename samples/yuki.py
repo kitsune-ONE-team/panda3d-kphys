@@ -86,7 +86,7 @@ class ActorSample(ShowBase):
             shader_parts = {}
             for stype in ('fragment', 'vertex'):
                 ftype = stype[:4]
-                filepath = os.path.join(os.path.dirname(__file__), f'actor.{ftype}.glsl')
+                filepath = os.path.join(os.path.dirname(__file__), f'yuki.{ftype}.glsl')
                 with open(filepath, 'r') as f:
                     shader_parts[stype] = f.read()
             shader = Shader.make(Shader.SL_GLSL, **shader_parts)
