@@ -15,6 +15,21 @@ class btGeneric6DofSpring2Constraint;
 #define M_PI 3.14159265358979323846264338327
 #endif
 
+#ifdef CPPPARSER  // interrogate
+BEGIN_PUBLISH
+#endif
+enum SpringDOF {  // Degree Of Freedom types:
+    SPRING_DOF_TX = 0,  // translation along X axis
+    SPRING_DOF_TY = 1,  // translation along Y axis
+    SPRING_DOF_TZ = 2,  // translation along Z axis
+    SPRING_DOF_RX = 3,  // rotation around X axis
+    SPRING_DOF_RY = 4,  // rotation around Y axis
+    SPRING_DOF_RZ = 5,  // rotation around Z axis
+};
+#ifdef CPPPARSER  // interrogate
+END_PUBLISH
+#endif
+
 
 class EXPORT_CLASS SpringConstraint: public BulletConstraint {
 PUBLISHED:
@@ -24,9 +39,7 @@ PUBLISHED:
         const TransformState* frame_a,
         const TransformState* frame_b,
         bool use_frame_a_ref);
-    ~SpringConstraint() {
-        delete _constraint;
-    }
+    ~SpringConstraint();
 
     void set_spring(int dof, bool enabled);
     void set_stiffness(int dof, double value);
@@ -35,28 +48,16 @@ PUBLISHED:
     void set_equilibrium_point(int dof);
     void set_equilibrium_point(int dof, double value);
 
-#ifdef USE_SPRING_V2
-    void set_rotation_order(int order);
-    void set_bounce(int dof, double value);
-
-    void set_motor(int dof, bool enabled);
-    void set_motor_servo(int dof, bool enabled);
-    void set_target_velocity(int dof, double value);
-    void set_servo_target(int dof, double value);
-    void set_max_motor_force(int dof, double value);
-#endif
+    void set_linear_lower_limit(const LVecBase3 &linear_lower);
+    void set_linear_upper_limit(const LVecBase3 &linearUpper);
 
 public:
     virtual btTypedConstraint* ptr() const {
-        return _constraint;
+        return (btGeneric6DofSpringConstraint*) _constraint;
     }
 
 private:
-#ifdef USE_SPRING_V2
-    btGeneric6DofSpring2Constraint *_constraint;
-#else
-    btGeneric6DofSpringConstraint *_constraint;
-#endif
+    void* _constraint;
     static TypeHandle _type_handle;
 
 public:
@@ -65,14 +66,7 @@ public:
     }
     static void init_type() {
         BulletConstraint::init_type();
-        register_type(
-            _type_handle,
-#ifdef USE_SPRING_V2
-            "Spring2Constraint",
-#else
-            "SpringConstraint",
-#endif
-            BulletConstraint::get_class_type());
+        register_type(_type_handle, "SpringConstraint", BulletConstraint::get_class_type());
     }
     virtual TypeHandle get_type() const {
         return get_class_type();
