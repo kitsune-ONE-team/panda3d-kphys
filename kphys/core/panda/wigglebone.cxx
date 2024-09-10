@@ -1,7 +1,8 @@
-#include <sys/param.h>
-
 #include "kphys/core/panda/frame.h"
 #include "kphys/core/panda/wigglebone.h"
+
+#define MAX(a, b) (a > b ? a : b)
+#define MIN(a, b) (a < b ? a : b)
 
 
 TypeHandle WiggleBoneNode::_type_handle;
