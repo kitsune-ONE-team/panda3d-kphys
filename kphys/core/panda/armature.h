@@ -32,9 +32,11 @@ PUBLISHED:
     ~ArmatureNode();
     void set_raw_transform(bool is_enabled);
     void cleanup();
-    void reset(bool all=false);
+    void reset_ik();
     void rebuild_bind_pose();
     void rebuild_bind_pose(NodePath np);
+    void rebuild_wiggle_bones();
+    void rebuild_wiggle_bones(NodePath np);
     void rebuild_ik(unsigned int ik_engine=IK_ENGINE_IK, unsigned int max_iterations=10);
     void update_ik();
     void update_ik(unsigned int priority);

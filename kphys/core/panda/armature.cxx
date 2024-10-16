@@ -70,10 +70,9 @@ void ArmatureNode::cleanup() {
     armature.clear_shader_input("bone_prev_transform_tex");
 }
 
-void ArmatureNode::reset(bool all) {
+void ArmatureNode::reset_ik() {
     NodePath armature = NodePath::any_path(this);
     NodePathCollection effectors = armature.find_all_matches("**/+EffectorNode");
-    NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
 
     // save effectors
     for (int i = 0; i < effectors.get_num_paths(); i++) {
@@ -82,12 +81,17 @@ void ArmatureNode::reset(bool all) {
     }
 
     // reset bones
-    for (int i = 0; i < bones.get_num_paths(); i++) {
-        NodePath np = bones.get_path(i);
-        if (!is_bone(np) && !all)
-            continue;
-        unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
-        np.set_mat(get_matrix(_bone_init_local, bone_id));
+    for (int i = 0; i < effectors.get_num_paths(); i++) {
+        NodePath np = effectors.get_path(i);
+        unsigned int chain_length = ((EffectorNode*) np.node())->get_chain_length();
+        while (np && chain_length > 0) {
+            if (is_bone(np)) {
+                unsigned int bone_id = ((BoneNode*) np.node())->get_bone_id();
+                np.set_mat(get_matrix(_bone_init_local, bone_id));
+                chain_length--;
+            }
+            np = np.get_parent();
+        }
     }
 
     // restore effectors
@@ -135,6 +139,30 @@ void ArmatureNode::rebuild_ik(unsigned int ik_engine, unsigned int max_iteration
         children_rebuild_ik(armature, _ik_solver, 0);
     }
 #endif
+}
+
+void ArmatureNode::rebuild_wiggle_bones() {
+    NodePath armature = NodePath::any_path(this);
+    rebuild_wiggle_bones(armature);
+}
+
+void ArmatureNode::rebuild_wiggle_bones(NodePath np) {
+    if (is_wiggle_bone(np)) {
+        double length = 0;
+        for (int i = 0; i < np.get_num_children(); i++) {
+            NodePath child_np = np.get_child(i);
+            if (!length) {
+                length = child_np.get_pos().length();
+            }
+            length = MIN(length, child_np.get_pos().length());
+        }
+        ((WiggleBoneNode*) np.node())->set_length(length);
+    }
+
+    for (int i = 0; i < np.get_num_children(); i++) {
+        NodePath child_np = np.get_child(i);
+        rebuild_wiggle_bones(child_np);
+    }
 }
 
 /**

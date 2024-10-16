@@ -70,7 +70,7 @@ unsigned int EffectorNode::rebuild_ik(struct ik_solver_t* ik_solver, unsigned in
     NodePath effector = NodePath::any_path(this);
     NodePath parent_bone = effector.get_parent();
 
-    if (is_bone(parent_bone)) {
+    if (is_any_bone(parent_bone)) {
         _ik_effector = ik_solver->effector->create();
         ik_solver->effector->attach(
             _ik_effector,

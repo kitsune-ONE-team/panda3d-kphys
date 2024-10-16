@@ -3,8 +3,7 @@
 
 #define VECTOR2_RIGHT LVecBase2(1, 0)
 #define VECTOR3_ZERO LVecBase3(0, 0, 0)
-/* #define VECTOR3_UP LVecBase3(0, 0, 1) */
-#define VECTOR3_UP LVecBase3(0, 1, 0)  // in godot
+#define VECTOR3_UP LVecBase3(0, 0, 1)  // if was Y-up in godot
 #define POINT_MASS_P 0
 #define POINT_MASS_V 1
 #define POINT_MASS_A 2
@@ -38,13 +37,28 @@ LQuaternion quat_shortest_arc(const LVecBase3& arc_from, const LVecBase3& arc_to
 class EXPORT_CLASS WiggleBoneNode: public BoneNode {
 PUBLISHED:
     explicit WiggleBoneNode(const char* name, unsigned int bone_id);
+
+    int get_wigglebone_mode();
     void set_wigglebone_mode(int value);
+
+    double get_stiffness();
     void set_stiffness(double value);
+
+    double get_damping();
     void set_damping(double value);
+
+    LVecBase3 get_gravity();
     void set_gravity(const LVecBase3& value);
+
+    double get_length();
     void set_length(double value);
+
+    double get_max_distance();
     void set_max_distance(double value);
+
+    double get_max_degrees();
     void set_max_degrees(double value);
+
     void reset();
     void update(NodePath root, LMatrix4 bone_pose, double delta);
 
@@ -58,7 +72,7 @@ private:
     double _max_degrees = 60.0;
 
     LMatrix3 _point_mass;
-    LMatrix4 _global_to_pose;
+    LMatrix3 _global_to_pose;
     bool _should_reset;
     LVecBase3 _acceleration;
     LVecBase3 _prev_mass_center;
@@ -68,7 +82,7 @@ private:
     void _physics_process(double delta);
     LVecBase3 _update_acceleration(const LMatrix4& global_bone_pose, double delta);
     void _solve(
-        const LMatrix4& global_to_local, const LVecBase3& acceleration,
+        const LMatrix3& global_to_local, const LVecBase3& acceleration,
         double delta);
     LMatrix4 _pose();
     void _point_mass_solve(double stiffness, double damping, double delta);

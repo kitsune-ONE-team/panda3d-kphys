@@ -11,6 +11,10 @@
 #define RGBA_CHANNEL_COUNT 4
 #define RGBA_MAT4_SIZE ((MAT4_WIDTH * MAT4_HEIGHT) / RGBA_CHANNEL_COUNT)
 
+#define MAX(a, b) (a > b ? a : b)
+#define MIN(a, b) (a < b ? a : b)
+#define ISCLOSE(a, b) (fabs(a - b) <= CMP_EPSILON)
+
 
 typedef union LMatrix4Array {
     LMatrix4 matrices[MAX_BONES];

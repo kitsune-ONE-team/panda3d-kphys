@@ -33,17 +33,19 @@ class NodeMixin(object):
         node_name = gltf_node.get('name', 'node'+str(nodeid))
         return ArmatureNode(node_name)
 
-    def create_joint(self, nodeid: int, gltf_node: dict, gltf_data: dict):
+    def create_joint(
+            self, nodeid: int, gltf_node: dict, gltf_data: dict,
+            is_spring: bool = False):
         """Create character joint."""
         node_name = gltf_node.get('name', 'node'+str(nodeid))
-        if nodeid in self.spring_bones:
+        if is_spring:
             return WiggleBoneNode(node_name, self.joints[nodeid])
         else:
             return BoneNode(node_name, self.joints[nodeid])
 
     def add_node(
             self, parent_np: p3d.NodePath, gltf_scene: dict,
-            nodeid: int, gltf_data: dict):
+            nodeid: int, gltf_data: dict, is_spring: bool = False):
         try:
             gltf_node = gltf_data['nodes'][nodeid]
         except IndexError:
@@ -54,13 +56,16 @@ class NodeMixin(object):
         node_name = gltf_node.get('name', 'node'+str(nodeid))
 
         if nodeid in self.joints:
-            panda_node = self.create_joint(nodeid, gltf_node, gltf_data)
+            panda_node = self.create_joint(nodeid, gltf_node, gltf_data, is_spring)
 
         elif nodeid in self.skeletons:
             panda_node = self.create_character(nodeid, gltf_node, gltf_data)
 
         else:
             panda_node = p3d.PandaNode(node_name)
+
+        if nodeid in self.spring_bones:
+            is_spring = True
 
         # Determine the transformation.
         if 'matrix' in gltf_node:
@@ -174,7 +179,7 @@ class NodeMixin(object):
             np.set_tag(key, str(value))
 
         for child_nodeid in gltf_node.get('children', []):
-            self.add_node(np, gltf_scene, child_nodeid, gltf_data)
+            self.add_node(np, gltf_scene, child_nodeid, gltf_data, is_spring)
 
         # Handle visibility after children are loaded
         def visible_recursive(node, visible):

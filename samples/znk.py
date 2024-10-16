@@ -47,6 +47,7 @@ class ActorSample(ShowBase):
             'right': [],
         }
         self._texts = []
+
         for i in range(1):
             filepath_a = os.path.join(os.path.dirname(__file__), 'Zonko_VRM_221128_ps.vrm')
             filepath_b = os.path.join(os.path.dirname(__file__), 'znk.vrm')
@@ -71,31 +72,38 @@ class ActorSample(ShowBase):
             actor.set_h(180)
             actor.node().update_shader_inputs()
 
+            # setup bullet physics based spring bones
+            # if we had them enabled during import
             for np in actor.find_all_matches('**/+BulletRigidBodyNode'):
                 self._bullet_world.attach_rigid_body(np.node())
                 if np.get_python_tag('constraint'):
                     self._bullet_world.attach_constraint(np.get_python_tag('constraint'))
 
+            # hide optional clothes
             actor.find('**/JacketB_A_geo').hide()
             actor.find('**/JacketBackB_geo').hide()
             actor.find('**/jaketB_top_geo').hide()
             actor.find('**/zipperB_geo').hide()
 
+            # add IK effector node to the head, which moves head and torso
             bone = actor.find('**/Head')
             effector = NodePath(EffectorNode('Effector Head', chain_length=4, priority=0))
             effector.reparent_to(bone)
             self._effectors['top'].append(effector)
 
+            # add IK effector node to the left hand, which moves left arm
             bone = actor.find('**/LeftHand')
             effector = NodePath(EffectorNode('Effector Hand_L', chain_length=2, priority=1))
             effector.reparent_to(bone)
             self._effectors['left'].append(effector)
 
+            # add IK effector node to the right hand, which moves right arm
             bone = actor.find('**/RightHand')
             effector = NodePath(EffectorNode('Effector Hand_R', chain_length=2, priority=1))
             effector.reparent_to(bone)
             self._effectors['right'].append(effector)
 
+            # add axis lines to visualize bones and effectors
             for bone in actor.find_all_matches('**/+BoneNode'):
                 if bone.get_children():
                     bone_length = bone.get_children()[0].get_pos().length()
@@ -105,8 +113,12 @@ class ActorSample(ShowBase):
             for bone in actor.find_all_matches('**/+EffectorNode'):
                 make_empty(parent=bone)
 
+            # build bone matrix arrays, setup IK
+            # and wiggle bones if they was enabled during import
             actor.node().rebuild_bind_pose()
             actor.node().rebuild_ik(IK_ENGINE_CCDIK if i == 0 else IK_ENGINE_IK)
+            actor.node().rebuild_wiggle_bones()
+
             text = OnscreenText(
                 text='CCDIK' if i == 0 else 'FABRIK',
                 pos=(i - 0.5, 0.75),
@@ -115,18 +127,17 @@ class ActorSample(ShowBase):
             self._texts.append(text)
             self._actors.append(actor)
 
+            # apply shaders to all geom nodes
             shader_parts = {}
             for stype in ('fragment', 'vertex'):
                 ftype = stype[:4]
                 filepath = os.path.join(os.path.dirname(__file__), f'yuki.{ftype}.glsl')
                 with open(filepath, 'r') as f:
                     shader_parts[stype] = f.read()
-
             shader = Shader.make(Shader.SL_GLSL, **shader_parts)
             for geom in actor.find_all_matches('**/+GeomNode'):
                 if geom.get_name() != 'lineNode':  # don't apply skinning to axis lines
                     geom.set_shader(shader)
-                    # geom.hide()
 
         self.accept('f3', self.toggleWireframe)
         self.accept('escape', sys.exit)
@@ -150,7 +161,7 @@ class ActorSample(ShowBase):
 
     def _actors_reset(self):
         for actor in self._actors:
-            actor.node().reset()
+            actor.node().reset_ik()
 
     def _move_effectors(self, etype, direction, delta):
         for effector in self._effectors[etype]:
@@ -175,10 +186,12 @@ class ActorSample(ShowBase):
 
         for actor in self._actors:
             actor.node().update_shader_inputs()
-            # actor.node().reset()
+            actor.node().reset_ik()
             actor.node().update_wiggle_bones(self.render, dt)
             actor.node().update_ik()
 
+        # run physics simulation if we had
+        # bullet physics based spring bones enabled during import
         self._bullet_world.do_physics(dt, 60, 1 / 60)
 
         return task.again

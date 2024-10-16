@@ -1,9 +1,6 @@
 #include "kphys/core/panda/frame.h"
 #include "kphys/core/panda/wigglebone.h"
 
-#define MAX(a, b) (a > b ? a : b)
-#define MIN(a, b) (a < b ? a : b)
-
 
 TypeHandle WiggleBoneNode::_type_handle;
 
@@ -22,8 +19,6 @@ WiggleBoneNode::WiggleBoneNode(const char* name, unsigned int bone_id):
     _wb_mode = WIGGLEBONE_MODE_ROTATION;
     _stiffness = 0.1;
     _damping = 0.1;
-    _stiffness = 0.1;
-    _damping = 0.1;
     _gravity = VECTOR3_ZERO;
     _length = 0.1;
     _max_distance = 0.1;
@@ -39,6 +34,10 @@ WiggleBoneNode::WiggleBoneNode(const char* name, unsigned int bone_id):
 /**
  * The wiggle mode.
  */
+int WiggleBoneNode::get_wigglebone_mode() {
+    return _wb_mode;
+}
+
 void WiggleBoneNode::set_wigglebone_mode(int value) {
     _wb_mode = value;
     reset();
@@ -47,6 +46,10 @@ void WiggleBoneNode::set_wigglebone_mode(int value) {
 /**
  * Rendency of bone to return to pose position.
  */
+double WiggleBoneNode::get_stiffness() {
+    return _stiffness;
+}
+
 void WiggleBoneNode::set_stiffness(double value) {
     _stiffness = value;
 }
@@ -54,6 +57,10 @@ void WiggleBoneNode::set_stiffness(double value) {
 /**
  * Reduction of motion.
  */
+double WiggleBoneNode::get_damping() {
+    return _damping;
+}
+
 void WiggleBoneNode::set_damping(double value) {
     _damping = value;
 }
@@ -61,8 +68,19 @@ void WiggleBoneNode::set_damping(double value) {
 /**
  * Gravity pulling at mass center.
  */
+LVecBase3 WiggleBoneNode::get_gravity() {
+    return _gravity;
+}
+
 void WiggleBoneNode::set_gravity(const LVecBase3& value) {
     _gravity = value;
+}
+
+/**
+ * Bone length.
+ */
+double WiggleBoneNode::get_length() {
+    return _length;
 }
 
 void WiggleBoneNode::set_length(double value) {
@@ -73,6 +91,10 @@ void WiggleBoneNode::set_length(double value) {
 /**
  * Maximum distance the bone can move around its pose position.
  */
+double WiggleBoneNode::get_max_distance() {
+    return _max_distance;
+}
+
 void WiggleBoneNode::set_max_distance(double value) {
     _max_distance = value;
 }
@@ -80,6 +102,10 @@ void WiggleBoneNode::set_max_distance(double value) {
 /**
  * Maximum rotation relative to pose position.
  */
+double WiggleBoneNode::get_max_degrees() {
+    return _max_degrees;
+}
+
 void WiggleBoneNode::set_max_degrees(double value) {
     _max_degrees = value;
 }
@@ -96,9 +122,10 @@ void WiggleBoneNode::_process(NodePath root, LMatrix4 bone_pose, double delta) {
         delta = 1.0 / 60.0;
 
     // panda -> phys
-    // LMatrix4 global_bone_pose = np.get_mat(root);
-    LMatrix4 global_bone_pose = np.get_parent().get_mat(root);
-    _global_to_pose.invert_from(global_bone_pose);
+    LMatrix4 global_bone_pose = np.get_parent().get_mat(root) * bone_pose;
+    LMatrix4 invert_global_bone_pose;
+    invert_global_bone_pose.invert_from(global_bone_pose);
+    _global_to_pose = invert_global_bone_pose.get_upper_3();
 
     LVecBase3 new_acceleration = _update_acceleration(global_bone_pose, delta);
     _acceleration = mix3(_acceleration, new_acceleration, ACCELERATION_WEIGHT);
@@ -111,6 +138,7 @@ void WiggleBoneNode::_process(NodePath root, LMatrix4 bone_pose, double delta) {
     // phys -> panda
     np.set_mat(bone_pose * _pose());
 }
+
 
 void WiggleBoneNode::_physics_process(double delta) {
     _solve(_global_to_pose, _acceleration, delta);
@@ -136,8 +164,7 @@ LVecBase3 WiggleBoneNode::_update_acceleration(
         break;
     }
 
-    mass_center = global_bone_pose.xform_point(mass_center);  // with translation
-    // mass_center = global_bone_pose.xform_vec(mass_center);  // without translation
+    mass_center = global_bone_pose.xform_point(mass_center);
     LVecBase3 delta_mass_center = _prev_mass_center - mass_center;
     _prev_mass_center = mass_center;
 
@@ -158,12 +185,12 @@ LVecBase3 WiggleBoneNode::_update_acceleration(
 }
 
 void WiggleBoneNode::_solve(
-        const LMatrix4& global_to_local, const LVecBase3& acceleration, double delta) {
+        const LMatrix3& global_to_local, const LVecBase3& acceleration, double delta) {
     LVecBase3 global_force = _gravity + const_force_global;
-    LVecBase3 local_force = global_to_local.xform_point(global_force) + const_force_local;
+    LVecBase3 local_force = global_to_local.xform(global_force) + const_force_local;
 
     double mass_distance = _length;
-    LVecBase3 local_acc = global_to_local.xform_point(acceleration);
+    LVecBase3 local_acc = global_to_local.xform(acceleration);
 
     switch (_wb_mode) {
     case WIGGLEBONE_MODE_ROTATION:
@@ -244,26 +271,52 @@ double _smin(double a, double b, double k) {
 
 /**
  * Constructs a Quaternion representing the shortest arc between arc_from and arc_to.
- * These can be imagined as two points intersecting a sphere's surface, with a radius of 1.0.
- * Copied from Godot - core/math/quaternion.h
+ * These can be imagined as two points intersecting a sphere's surface,
+ * with a radius of 1.0.
  */
 LQuaternion quat_shortest_arc(const LVecBase3& arc_from, const LVecBase3& arc_to) {
-    LVecBase3 c = arc_from.cross(arc_to);
-    double d = arc_from.dot(arc_to);
+    LVecBase3 v1 = arc_from.normalized();
+    LVecBase3 v2 = arc_to.normalized();
 
-    if (d < -1.0 + CMP_EPSILON) {
+    // compute the axis of rotation (cross product of v1 and v2)
+    LVecBase3 axis = v1.cross(v2);
+
+    // compute the dot product to get the cosine of the angle between v1 and v2
+    double cos_angle = v1.dot(v2);
+
+    double angle;
+
+    if (ISCLOSE(cos_angle, 1.0)) {
+        // if the vectors are already aligned, return the identity quaternion
         return LQuaternion(1, 0, 0, 0);
 
-    } else {
-        double s = sqrt((1.0 + d) * 2.0);
-        double rs = 1.0 / s;
+    } else if (ISCLOSE(cos_angle, -1.0)) {
+        // if the vectors are opposite, rotate 180 degrees around any orthogonal vector
+        angle = M_PI;
 
-        return LQuaternion(
-            s * 0.5,
-            c.get_x() * rs,
-            c.get_y() * rs,
-            c.get_z() * rs);
+        // find an orthogonal vector
+        if (v1.get_x() != 0 || v1.get_y() != 0) {
+            axis = LVecBase3(-v1.get_y(), v1.get_x(), 0);
+        } else {
+            axis = LVecBase3(0, -v1.get_z(), v1.get_y());
+        }
+
+    } else {
+        // compute the angle of rotation
+        angle = acos(cos_angle);
     }
+
+    // normalize the axis
+    axis = axis.normalized();
+
+    // construct the quaternion
+    double half_angle = angle / 2.0;
+
+    return LQuaternion(
+        cos(half_angle),
+        axis.get_x() * sin(half_angle),
+        axis.get_y() * sin(half_angle),
+        axis.get_z() * sin(half_angle));
 }
 
 void WiggleBoneNode::_point_mass_solve(double stiffness, double damping, double delta) {
