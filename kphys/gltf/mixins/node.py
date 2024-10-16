@@ -45,7 +45,7 @@ class NodeMixin(object):
 
     def add_node(
             self, parent_np: p3d.NodePath, gltf_scene: dict,
-            nodeid: int, gltf_data: dict, is_spring: bool = False):
+            nodeid: int, gltf_data: dict, spring_data: dict = None):
         try:
             gltf_node = gltf_data['nodes'][nodeid]
         except IndexError:
@@ -56,7 +56,21 @@ class NodeMixin(object):
         node_name = gltf_node.get('name', 'node'+str(nodeid))
 
         if nodeid in self.joints:
-            panda_node = self.create_joint(nodeid, gltf_node, gltf_data, is_spring)
+            if spring_data:  # create wiggle bone
+                panda_node = self.create_joint(nodeid, gltf_node, gltf_data, True)
+                if 'stiffness' in spring_data:
+                    panda_node.set_stiffness(spring_data['stiffness'])
+                if 'dragForce' in spring_data:
+                    panda_node.set_damping(spring_data['dragForce'])
+                if 'gravityDir' in spring_data and 'gravityPower' in spring_data:
+                    panda_node.set_gravity(p3d.Vec3(
+                        spring_data['gravityDir']['x'],
+                        spring_data['gravityDir']['z'],
+                        spring_data['gravityDir']['y'] * -1,
+                    ) * spring_data['gravityPower'])
+
+            else:  # create regular bone
+                panda_node = self.create_joint(nodeid, gltf_node, gltf_data)
 
         elif nodeid in self.skeletons:
             panda_node = self.create_character(nodeid, gltf_node, gltf_data)
@@ -65,7 +79,7 @@ class NodeMixin(object):
             panda_node = p3d.PandaNode(node_name)
 
         if nodeid in self.spring_bones:
-            is_spring = True
+            spring_data = self.spring_bones[nodeid]
 
         # Determine the transformation.
         if 'matrix' in gltf_node:
@@ -179,7 +193,7 @@ class NodeMixin(object):
             np.set_tag(key, str(value))
 
         for child_nodeid in gltf_node.get('children', []):
-            self.add_node(np, gltf_scene, child_nodeid, gltf_data, is_spring)
+            self.add_node(np, gltf_scene, child_nodeid, gltf_data, spring_data)
 
         # Handle visibility after children are loaded
         def visible_recursive(node, visible):
