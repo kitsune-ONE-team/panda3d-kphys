@@ -188,11 +188,9 @@ void ArmatureNode::update_ik() {
  * Update IK for the effectors with specified priority.
  */
 void ArmatureNode::update_ik(unsigned int priority) {
-    for (int i = 0; i < 10; i++) {
-        sync_p2ik_recursive();  // write all bones
-        solve_ik(priority);  // solve IK problem
-        sync_ik2p_chains();  // read bones from active chains
-    }
+    sync_p2ik_recursive();  // write all bones
+    solve_ik(priority);  // solve IK problem
+    sync_ik2p_chains();  // read bones from active chains
 }
 
 /**
