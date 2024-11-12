@@ -161,6 +161,8 @@ void ArmatureNode::rebuild_wiggle_bones(NodePath np) {
 
     for (int i = 0; i < np.get_num_children(); i++) {
         NodePath child_np = np.get_child(i);
+        if (is_armature(child_np))
+            continue;
         rebuild_wiggle_bones(child_np);
     }
 }
@@ -258,6 +260,8 @@ void ArmatureNode::_update_matrices(NodePath np, LMatrix4 parent_mat, bool is_cu
 
     for (int i = 0; i < np.get_num_children(); i++) {
         NodePath child_np = np.get_child(i);
+        if (is_armature(child_np))
+            continue;
         _update_matrices(child_np, mat, is_current);
     }
 }
@@ -279,6 +283,8 @@ void ArmatureNode::_update_wiggle_bones(NodePath root_np, NodePath np, double dt
 
     for (int i = 0; i < np.get_num_children(); i++) {
         NodePath child_np = np.get_child(i);
+        if (is_armature(child_np))
+            continue;
         _update_wiggle_bones(root_np, child_np, dt);
     }
 }
