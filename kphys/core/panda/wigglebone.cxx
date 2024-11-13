@@ -136,7 +136,7 @@ void WiggleBoneNode::_process(NodePath root, LMatrix4 bone_pose, double delta) {
     _acceleration /= MIN(MAX(delta_factor, 1.0), 3.0);  // TODO: adjust for rates higher than 60 fps
 
     // phys -> panda
-    np.set_mat(bone_pose * _pose());
+    np.set_mat(_pose() * bone_pose);
 }
 
 

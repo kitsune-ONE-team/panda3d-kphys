@@ -55,6 +55,9 @@ class NodeMixin(object):
         scene_extras = self.get_extras(gltf_scene)
         node_name = gltf_node.get('name', 'node'+str(nodeid))
 
+        if nodeid in self.spring_bones:
+            spring_data = self.spring_bones[nodeid]
+
         if nodeid in self.joints:
             if spring_data:  # create wiggle bone
                 panda_node = self.create_joint(nodeid, gltf_node, gltf_data, True)
@@ -77,9 +80,6 @@ class NodeMixin(object):
 
         else:
             panda_node = p3d.PandaNode(node_name)
-
-        if nodeid in self.spring_bones:
-            spring_data = self.spring_bones[nodeid]
 
         # Determine the transformation.
         if 'matrix' in gltf_node:
