@@ -85,7 +85,7 @@ Frame::~Frame() {
     _transform_factors.clear();
 }
 
-void Frame::add_transform(
+void Frame::set_transform(
         const char* name, ConstPointerTo<TransformState> transform,
         unsigned short flags, double factor) {
     if (get_transform(name) != NULL)
@@ -98,7 +98,7 @@ void Frame::add_transform(
     _transform_factors[s] = factor;
 }
 
-void Frame::add_transform(
+void Frame::set_transform(
         const char* name, ConstPointerTo<TransformState> transform,
         bool has_pos, bool has_hpr, bool has_quat, double factor) {
     unsigned short flags = 0;
@@ -108,7 +108,7 @@ void Frame::add_transform(
         flags |= TRANSFORM_HPR;
     if (has_quat)
         flags |= TRANSFORM_QUAT;
-    add_transform(name, transform, flags, factor);
+    set_transform(name, transform, flags, factor);
 }
 
 unsigned int Frame::get_num_transforms() {
@@ -180,12 +180,12 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
             double cfactor = (factor < 0.0) ? factor_b : factor;
 
             if (transform_a != NULL && cfactor < 0.001) {
-                frame->add_transform(bone_name, transform_a, flags_a);
+                frame->set_transform(bone_name, transform_a, flags_a);
                 continue;
             }
 
             if (transform_b != NULL && cfactor > 0.999) {
-                frame->add_transform(bone_name, transform_b, flags_b);
+                frame->set_transform(bone_name, transform_b, flags_b);
                 continue;
             }
 
@@ -223,7 +223,7 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
                     transform = TransformState::make_quat(quat);
 
                 if (transform != NULL) {
-                      frame->add_transform(
+                      frame->set_transform(
                           bone_name, transform, has_pos, has_hpr, has_quat);
                 }
             }

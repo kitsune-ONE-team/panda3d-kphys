@@ -106,7 +106,7 @@ void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
                     continue;
 
                 unsigned short flags = frame->get_transform_flags(bone_name);
-                frames[s]->add_transform(bone_name, transform, flags, cfactor);
+                frames[s]->set_transform(bone_name, transform, flags, cfactor);
             }
         }
     }

@@ -44,10 +44,10 @@ private:
     static TypeHandle _type_handle;
 
 public:
-    void add_transform(
+    void set_transform(
         const char* name, ConstPointerTo<TransformState> transform,
         unsigned short flags, double factor=1.0);
-    void add_transform(
+    void set_transform(
         const char* name, ConstPointerTo<TransformState> transform,
         bool has_pos, bool has_hpr, bool has_quat, double factor=1.0);
 

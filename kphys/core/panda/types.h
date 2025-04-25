@@ -1,7 +1,9 @@
 #ifndef PANDA_TYPES_H
 #define PANDA_TYPES_H
 
+#include <unordered_map>
 #include "nodePath.h"
+#include "pmap.h"
 
 #define MAX_BONES 256
 #define FLOAT_SIZE 4
@@ -15,6 +17,8 @@
 #define MIN(a, b) (a < b ? a : b)
 #define ISCLOSE(a, b) (fabs(a - b) <= CMP_EPSILON)
 
+#define KDICT pmap
+// #define KDICT std::unordered_map
 
 typedef union LMatrix4Array {
     LMatrix4 matrices[MAX_BONES];

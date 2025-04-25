@@ -10,7 +10,8 @@ Channel::Channel(const char* name): Namable(name) {
         _animations[i] = NULL;
         _frame_indices[i] = 0.0;
     }
-    double _factor = 0.0;
+    _factor = 0.0;
+    _blending_func = BF_LINEAR;
 }
 
 Channel::~Channel() {
@@ -71,15 +72,25 @@ bool Channel::is_bone_enabled(const char* name) {
 
 /**
    Returns factor of blending.
-   0   -> A = 100%, B =   0%
-   100 -> A =   0%, B = 100%
+   0:   A = 100%, B =   0%
+   100: A =   0%, B = 100%
 */
 double Channel::get_factor() {
-    return _factor / _blending_time;
+    double factor = _factor / _blending_time;
+    switch (_blending_func) {
+    case BF_EXPONENTIAL:
+        return pow(factor, 2);
+    default:  // BF_LINEAR
+        return factor;
+    }
 }
 
 void Channel::set_blending_time(double t) {
     _blending_time = t;
+}
+
+void Channel::set_blending_func(unsigned int type) {
+    _blending_func = type;
 }
 
 double Channel::get_frame_index(unsigned short slot) {
@@ -104,7 +115,8 @@ PointerTo<Frame> Channel::get_frame(unsigned short slot, bool interpolate) {
         unsigned long j = (unsigned long) ceil(index);
         PointerTo<Frame> frame_i = animation->get_frame(i);
         PointerTo<Frame> frame_j = animation->get_frame(j);
-        return frame_i->mix(frame_j, fmod(index, 1));  // index % 1
+        double factor = fmod(index, 1);  // index % 1
+        return frame_i->mix(frame_j, factor);
     } else {
         unsigned long i = (unsigned long) round(index);
         return animation->get_frame(i);

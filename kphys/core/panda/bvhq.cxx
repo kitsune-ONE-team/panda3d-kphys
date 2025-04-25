@@ -253,7 +253,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
                         transform = TransformState::make_quat(quat);
 
                     if (transform != NULL) {
-                        frame->add_transform(
+                        frame->set_transform(
                             joint->get_name().c_str(), transform, has_pos, has_hpr, has_quat);
                     }
 
