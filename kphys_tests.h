@@ -44,69 +44,132 @@ public:
         TS_ASSERT(hit == nullptr);
     }
 
-    void testMix_Identity() {
-        PointerTo<Frame> frameA = new Frame();
-        PointerTo<Frame> frameB = new Frame();
+    void test_copy_into(void) {
+        PointerTo<Frame> frame_a = new Frame();
+        PointerTo<Frame> frame_b = new Frame();
 
-        PointerTo<Frame> result = frameA->mix(frameB, 0.0);
-        TS_ASSERT_EQUALS(result.p(), frameA.p());
+        // Set up some transforms in frame_a
+        frame_a->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(1, 2, 3)), TRANSFORM_POS);
+        frame_a->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(45, 0, 0)), TRANSFORM_HPR);
+
+        // Copy frame_a into frame_b
+        frame_a->copy_into(*frame_b.p());
+
+        // Verify that frame_b has the same transforms as frame_a
+        TS_ASSERT_EQUALS(frame_b->get_transform("bone1"), frame_a->get_transform("bone1"));
+        TS_ASSERT_EQUALS(frame_b->get_transform("bone2"), frame_a->get_transform("bone2"));
+
+        frame_a->reset();
+        frame_b->reset();
     }
 
-    void testMix_Other() {
-        PointerTo<Frame> frameA = new Frame();
-        PointerTo<Frame> frameB = new Frame();
+    void test_mix_into(void) {
+        PointerTo<Frame> frame_a = new Frame();
+        PointerTo<Frame> frame_b = new Frame();
+        PointerTo<Frame> frame_dest = new Frame();
 
-        PointerTo<Frame> result = frameA->mix(frameB, 1.0);
-        TS_ASSERT_EQUALS(result.p(), frameB.p());
+        // Set up some transforms in frame_a and frame_b
+        frame_a->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(1, 2, 3)), TRANSFORM_POS);
+        frame_a->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(45, 0, 0)), TRANSFORM_HPR);
+        frame_b->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(4, 5, 6)), TRANSFORM_POS);
+        frame_b->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(90, 0, 0)), TRANSFORM_HPR);
+
+        // Mix frame_a and frame_b into frame_dest with a factor of 0.5
+        frame_a->mix_into(*frame_dest.p(), frame_b, 0.5);
+
+        // Verify that frame_dest has the mixed transforms
+        TS_ASSERT_EQUALS(frame_dest->get_num_transforms(), 2);
+        LVecBase3 expected_pos = LVecBase3(2.5, 3.5, 4.5);
+        LVecBase3 expected_hpr = LVecBase3(67.5, 0, 0);
+        TS_ASSERT_EQUALS(frame_dest->get_transform("bone1")->get_pos(), expected_pos);
+        TS_ASSERT_EQUALS(frame_dest->get_transform("bone2")->get_hpr(), expected_hpr);
+
+        frame_a->reset();
+        frame_b->reset();
+        frame_dest->reset();
     }
 
-    void testMix_Interpolate() {
-        PointerTo<Frame> frameA = new Frame();
-        PointerTo<Frame> frameB = new Frame();
+    void test_mix_into_combine(void) {
+        PointerTo<Frame> frame_a = new Frame();
+        PointerTo<Frame> frame_b = new Frame();
+        PointerTo<Frame> frame_dest = new Frame();
 
-        // Set up some transforms in frameA and frameB
-        ConstPointerTo<TransformState> transformA = TransformState::make_pos(LVecBase3(1, 2, 3));
-        ConstPointerTo<TransformState> transformB = TransformState::make_pos(LVecBase3(4, 5, 6));
-        frameA->set_transform("bone1", transformA, 0, 1.0);
-        frameB->set_transform("bone1", transformB, 0, 1.0);
+        // Set up some transforms in frame_a and frame_b
+        frame_a->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(1, 2, 3)), TRANSFORM_POS);
+        frame_b->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(90, 0, 0)), TRANSFORM_HPR);
 
-        PointerTo<Frame> result = frameA->mix(frameB, 0.5);
+        // Mix frame_a and frame_b into frame_dest
+        frame_a->mix_into(*frame_dest.p(), frame_b);
 
-        // Check that the result is an interpolated transform
-        ConstPointerTo<TransformState> transform = result->get_transform("bone1");
-        TS_ASSERT_EQUALS(transform->has_pos(), true);
-        // TS_ASSERT_EQUALS(transform->has_hpr(), false);
-        // TS_ASSERT_EQUALS(transform->has_quat(), false);
-        // LVecBase3 pos;
-        // printf("%s\n", transform);
-        // transform->get_pos();
-        // TS_ASSERT_DELTA(pos.get_x(), 2.5, 1e-6);
-        // TS_ASSERT_DELTA(pos.get_y(), 3.5, 1e-6);
-        // TS_ASSERT_DELTA(pos.get_z(), 4.5, 1e-6);
+        // Verify that frame_dest has the mixed transforms
+        TS_ASSERT_EQUALS(frame_dest->get_num_transforms(), 1);
+        LVecBase3 expected_hpr = LVecBase3(90, 0, 0);
+        TS_ASSERT_EQUALS(frame_dest->get_transform("bone2")->get_hpr(), expected_hpr);
+
+        frame_a->reset();
+        frame_b->reset();
+        frame_dest->reset();
     }
 
-    // void testMix_MultipleBones() {
-    //     Frame frameA;
-    //     Frame frameB;
-    //
-    //     // Set up some transforms in frameA and frameB
-    //     frameA.set_transform("bone1", TransformState::make_pos(LVecBase3(1, 2, 3)), 0, 1.0);
-    //     frameA.set_transform("bone2", TransformState::make_hpr(LVecBase3(10, 20, 30)), 0, 1.0);
-    //     frameB.set_transform("bone1", TransformState::make_pos(LVecBase3(4, 5, 6)), 0, 1.0);
-    //     frameB.set_transform("bone2", TransformState::make_hpr(LVecBase3(40, 50, 60)), 0, 1.0);
-    //
-    //     Frame* result = frameA.mix(&frameB, 0.5);
-    //
-    //     // Check that the result is an interpolated transform for both bones
-    //     ConstPointerTo<TransformState> transform1 = result->get_transform("bone1");
-    //     TS_ASSERT_DELTA(transform1->get_pos().get_x(), 2.5, 1e-6);
-    //     TS_ASSERT_DELTA(transform1->get_pos().get_y(), 3.5, 1e-6);
-    //     TS_ASSERT_DELTA(transform1->get_pos().get_z(), 4.5, 1e-6);
-    //
-    //     ConstPointerTo<TransformState> transform2 = result->get_transform("bone2");
-    //     TS_ASSERT_DELTA(transform2->get_hpr().get_x(), 25, 1e-6);
-    //     TS_ASSERT_DELTA(transform2->get_hpr().get_y(), 35, 1e-6);
-    //     TS_ASSERT_DELTA(transform2->get_hpr().get_z(), 45, 1e-6);
-    // }
-    //
+    void test_mix_into_factor_0(void) {
+        PointerTo<Frame> frame_a = new Frame();
+        PointerTo<Frame> frame_b = new Frame();
+        PointerTo<Frame> frame_dest = new Frame();
+
+        // Set up some transforms in frame_a and frame_b
+        frame_a->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(1, 2, 3)), TRANSFORM_POS);
+        frame_a->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(45, 0, 0)), TRANSFORM_HPR);
+        frame_b->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(4, 5, 6)), TRANSFORM_POS);
+        frame_b->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(90, 0, 0)), TRANSFORM_HPR);
+
+        // Mix frame_a and frame_b into frame_dest with a factor of 0.0
+        frame_a->mix_into(*frame_dest.p(), frame_b, 0.0);
+
+        // Verify that frame_dest is the same as frame_a
+        TS_ASSERT_EQUALS(frame_dest->get_transform("bone1"), frame_a->get_transform("bone1"));
+        TS_ASSERT_EQUALS(frame_dest->get_transform("bone2"), frame_a->get_transform("bone2"));
+
+        frame_a->reset();
+        frame_b->reset();
+        frame_dest->reset();
+    }
+
+    void test_mix_into_factor_1(void) {
+        PointerTo<Frame> frame_a = new Frame();
+        PointerTo<Frame> frame_b = new Frame();
+        PointerTo<Frame> frame_dest = new Frame();
+
+        // Set up some transforms in frame_a and frame_b
+        frame_a->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(1, 2, 3)), TRANSFORM_POS);
+        frame_a->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(45, 0, 0)), TRANSFORM_HPR);
+        frame_b->set_transform(
+            "bone1", TransformState::make_pos(LVecBase3(4, 5, 6)), TRANSFORM_POS);
+        frame_b->set_transform(
+            "bone2", TransformState::make_hpr(LVecBase3(90, 0, 0)), TRANSFORM_HPR);
+
+        // Mix frame_a and frame_b into frame_dest with a factor of 1.0
+        frame_a->mix_into(*frame_dest.p(), frame_b, 1.0);
+
+        // Verify that frame_dest is the same as frame_b
+        TS_ASSERT_EQUALS(frame_dest->get_transform("bone1"), frame_b->get_transform("bone1"));
+        TS_ASSERT_EQUALS(frame_dest->get_transform("bone2"), frame_b->get_transform("bone2"));
+
+        frame_a->reset();
+        frame_b->reset();
+        frame_dest->reset();
+    }
 };

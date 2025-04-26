@@ -26,6 +26,9 @@ PUBLISHED:
     void apply(bool blend=true, bool interpolate=true, bool local_space=true);
 
 private:
+    PointerTo<Frame> _mframe;  // final mixed frame
+    PointerTo<Frame> _iframes[NUM_SLOTS];  // interpolated frames
+    PointerTo<Frame> _fframes[NUM_SLOTS];  // filtered frames
     KDICT<std::string, PointerTo<Animation>> _animations;
     KDICT<std::string, NodePath> _armatures;
     pvector<std::string> _channel_names;

@@ -100,10 +100,10 @@ void Channel::set_frame_index(unsigned short slot, double index) {
 /**
    Returns animation frame from the specified slot.
 */
-PointerTo<Frame> Channel::get_frame(unsigned short slot, bool interpolate) {
+bool Channel::save_frame(Frame& frame, unsigned short slot, bool interpolate) {
     PointerTo<Animation> animation = get_animation(slot);
     if (animation == NULL)
-        return NULL;
+        return false;
 
     double index = get_frame_index(slot);
     if (interpolate) {
@@ -112,11 +112,13 @@ PointerTo<Frame> Channel::get_frame(unsigned short slot, bool interpolate) {
         PointerTo<Frame> frame_i = animation->get_frame(i);
         PointerTo<Frame> frame_j = animation->get_frame(j);
         double factor = fmod(index, 1);  // index % 1
-        return frame_i->mix(frame_j, factor);
+        frame_i->mix_into(frame, frame_j, factor);
     } else {
         unsigned long i = (unsigned long) round(index);
-        return animation->get_frame(i);
+        PointerTo<Frame> frame_i = animation->get_frame(i);
+        frame_i->copy_into(frame);
     }
+    return true;
 }
 
 /**
@@ -128,7 +130,7 @@ PointerTo<Animation> Channel::get_animation(unsigned short slot) {
 
 void Channel::ls() {
     printf(
-        "%s (%f):\n    A: %s\n    B: %s\n",
+        "Channel (%s) { (%f):\n    A: %s\n    B: %s }\n",
         get_name().c_str(),
         get_factor(),
         (_animations[SLOT_A] != NULL) ? _animations[SLOT_A]->get_name().c_str() : "-",

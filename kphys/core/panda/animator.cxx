@@ -6,9 +6,20 @@
 
 TypeHandle AnimatorNode::_type_handle;
 
-AnimatorNode::AnimatorNode(const std::string name): PandaNode(name) {}
+AnimatorNode::AnimatorNode(const std::string name): PandaNode(name) {
+    _mframe = new Frame();
+    for (unsigned int s = 0; s < NUM_SLOTS; s++) {
+        _iframes[s] = new Frame();
+        _fframes[s] = new Frame();
+    }
+}
 
 AnimatorNode::~AnimatorNode() {
+    _mframe->reset();
+    for (unsigned int s = 0; s < NUM_SLOTS; s++) {
+        _iframes[s]->reset();
+        _fframes[s]->reset();
+    }
     _animations.clear();
     _channel_names.clear();
     _channels.clear();
@@ -87,53 +98,45 @@ void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
     if (armature.is_empty())
         return;
 
-    PointerTo<Frame> frames[NUM_SLOTS];
     for (unsigned int s = 0; s < NUM_SLOTS; s++) {
-        // if (!blend && s == SLOT_A)
-        //     continue;
+        _fframes[s]->reset();
 
-        frames[s] = new Frame();
+        if (s == SLOT_A && !blend)
+            continue;
 
         // merge all channels into the singe frame
         unsigned int csize = get_num_channels();
         for (unsigned int c = 0; c < csize; c++) {
             PointerTo<Channel> channel = get_channel(c);
 
-            PointerTo<Frame> frame = channel->get_frame(s, interpolate);
-            // frame->ls();
-            if (frame == NULL)
+            _iframes[s]->reset();
+            if (!channel->save_frame(*_iframes[s].p(), s, interpolate))
                 continue;
 
             double cfactor = channel->get_factor();
-            if (!blend)
-                cfactor = 1.0;
-
             if (s == SLOT_A)
                 cfactor = 1.0 - cfactor;
 
+            if (!blend)
+                cfactor = 1.0;
+
             // copy transforms
-            unsigned int bsize = frame->get_num_transforms();
+            unsigned int bsize = _iframes[s]->get_num_transforms();
             for (unsigned int b = 0; b < bsize; b++) {
-                std::string bone_name = frame->get_bone_name(b);
+                std::string bone_name = _iframes[s]->get_bone_name(b);
                 if (!channel->is_bone_enabled(bone_name))
                     continue;
 
-                if (frames[s]->get_transform(bone_name) != NULL)
-                    continue;
-
-                ConstPointerTo<TransformState> transform = frame->get_transform(bone_name);
-                if (transform == NULL)
-                    continue;
-
-                unsigned short flags = frame->get_transform_flags(bone_name);
-                frames[s]->set_transform(bone_name, transform, flags, cfactor);
+                _iframes[s]->copy_transform_into(*_fframes[s].p(), bone_name, cfactor);
             }
         }
     }
 
-    // frames[SLOT_A]->ls();
-    // frames[SLOT_B]->ls();
-    PointerTo<Frame> frame = frames[SLOT_A]->mix(frames[SLOT_B]);
-    // frame->ls();
-    ((ArmatureNode*) armature.node())->apply(frame, local_space);
+    if (blend) {
+        _mframe->reset();
+        _fframes[SLOT_A]->mix_into(*_mframe.p(), _fframes[SLOT_B]);
+        ((ArmatureNode*) armature.node())->apply(_mframe, local_space);
+    } else {
+        ((ArmatureNode*) armature.node())->apply(_fframes[SLOT_B], local_space);
+    }
 }

@@ -35,7 +35,7 @@ PUBLISHED:
     void set_blending_func(unsigned int type);
     double get_frame_index(unsigned short slot);
     void set_frame_index(unsigned short slot, double frame);
-    PointerTo<Frame> get_frame(unsigned short slot, bool interpolate=true);
+    bool save_frame(Frame& frame, unsigned short slot, bool interpolate=true);
     PointerTo<Animation> get_animation(unsigned short slot);
     void ls();
     void push_animation(PointerTo<Animation> animation);
