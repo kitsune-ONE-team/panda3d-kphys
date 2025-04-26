@@ -25,7 +25,7 @@ TypeHandle BVHQ::_type_handle;
 TypeHandle BVHQJoint::_type_handle;
 
 
-BVHQJoint::BVHQJoint(const char* name): Namable(name) {
+BVHQJoint::BVHQJoint(const std::string name): Namable(name) {
 }
 
 BVHQJoint::~BVHQJoint() {
@@ -36,18 +36,19 @@ unsigned long BVHQJoint::get_num_channels() {
     return _channels.size();
 }
 
-char* BVHQJoint::get_channel(unsigned long i) {
+std::string BVHQJoint::get_channel(unsigned long i) {
     return _channels[i];
 }
 
-void BVHQJoint::add_channel(char* name) {
+void BVHQJoint::add_channel(std::string name) {
     return _channels.push_back(name);
 }
 
-BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
+
+BVHQ::BVHQ(const std::string name, Filename filename, bool local_space, bool debug):
         Animation(name, local_space) {
     if (debug)
-        printf("FILE OPEN %s\n", name);
+        printf("FILE OPEN %s\n", name.c_str());
 
     VirtualFileSystem* vfs = VirtualFileSystem::get_global_ptr();
     _istream = vfs->open_read_file(filename, true);
@@ -83,7 +84,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
             char* name = (char*) malloc(sizeof(char) * (strlen(word) + 1));
             strcpy(name, word);
 
-            PointerTo<BVHQJoint> joint = new BVHQJoint(name);
+            PointerTo<BVHQJoint> joint = new BVHQJoint(std::string(name));
             _hierarchy.push_back(joint);
 
             if (debug)
@@ -111,7 +112,7 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
                 char* channel = (char*) malloc(sizeof(char) * (strlen(word) + 1));
                 strcpy(channel, word);
 
-                _hierarchy.back()->add_channel(channel);
+                _hierarchy.back()->add_channel(std::string(channel));
                 if (debug)
                     printf("JOINT %s CHANNEL %s\n", _hierarchy.back()->get_name().c_str(), channel);
 
@@ -179,10 +180,10 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
                 for (PointerTo<BVHQJoint> joint: _hierarchy) {
                     LVecBase3 pos, hpr;
                     LQuaternion quat;
-                    bool has_pos = false, has_hpr = false, has_quat = false;
+                    unsigned short flags = 0;
 
                     for (unsigned long ci = 0; ci < joint->get_num_channels(); ci++) {
-                        char* channel = joint->get_channel(ci);
+                        std::string channel = joint->get_channel(ci);
 
                         if (iframe > 0 || bi > 0 || ci > 0)
                             end = _readword(word, WORD_MAX_LEN);  // read channel value
@@ -190,47 +191,47 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
                         // if (debug)
                         //     printf("CHANNEL %s %s %s\n", joint->name, channel, word);
 
-                        if (strcmp(channel, "Xposition") == 0) {
+                        if (strcmp(channel.c_str(), "Xposition") == 0) {
                             pos.set_x(atof(word));
-                            has_pos = true;
+                            flags |= TRANSFORM_POS;
                         }
-                        if (strcmp(channel, "Yposition") == 0) {
+                        if (strcmp(channel.c_str(), "Yposition") == 0) {
                             pos.set_y(atof(word));
-                            has_pos = true;
+                            flags |= TRANSFORM_POS;
                         }
-                        if (strcmp(channel, "Zposition") == 0) {
+                        if (strcmp(channel.c_str(), "Zposition") == 0) {
                             pos.set_z(atof(word));
-                            has_pos = true;
+                            flags |= TRANSFORM_POS;
                         }
 
-                        if (strcmp(channel, "Xrotation") == 0) {
+                        if (strcmp(channel.c_str(), "Xrotation") == 0) {
                             hpr.set_x(atof(word));
-                            has_hpr = true;
+                            flags |= TRANSFORM_HPR;
                         }
-                        if (strcmp(channel, "Yrotation") == 0) {
+                        if (strcmp(channel.c_str(), "Yrotation") == 0) {
                             hpr.set_y(atof(word));
-                            has_hpr = true;
+                            flags |= TRANSFORM_HPR;
                         }
-                        if (strcmp(channel, "Zrotation") == 0) {
+                        if (strcmp(channel.c_str(), "Zrotation") == 0) {
                             hpr.set_z(atof(word));
-                            has_hpr = true;
+                            flags |= TRANSFORM_HPR;
                         }
 
-                        if (strcmp(channel, "Irotation") == 0) {
+                        if (strcmp(channel.c_str(), "Irotation") == 0) {
                             quat.set_i(atof(word));
-                            has_quat = true;
+                            flags |= TRANSFORM_QUAT;
                         }
-                        if (strcmp(channel, "Jrotation") == 0) {
+                        if (strcmp(channel.c_str(), "Jrotation") == 0) {
                             quat.set_j(atof(word));
-                            has_quat = true;
+                            flags |= TRANSFORM_QUAT;
                         }
-                        if (strcmp(channel, "Krotation") == 0) {
+                        if (strcmp(channel.c_str(), "Krotation") == 0) {
                             quat.set_k(atof(word));
-                            has_quat = true;
+                            flags |= TRANSFORM_QUAT;
                         }
-                        if (strcmp(channel, "Rrotation") == 0) {
+                        if (strcmp(channel.c_str(), "Rrotation") == 0) {
                             quat.set_r(atof(word));
-                            has_quat = true;
+                            flags |= TRANSFORM_QUAT;
                         }
 
                         if (end == '\0' || end == '\n')
@@ -239,23 +240,21 @@ BVHQ::BVHQ(const char* name, Filename filename, bool local_space, bool debug):
 
                     ConstPointerTo<TransformState> transform = NULL;
 
-                    if (has_pos && has_hpr && !has_quat)
+                    if (flags & TRANSFORM_POS && flags & TRANSFORM_HPR && !(flags & TRANSFORM_QUAT))
                         transform = TransformState::make_pos_hpr(pos, hpr);
-                    else if (has_pos && !has_hpr && has_quat)
+                    else if (flags & TRANSFORM_POS && !(flags & TRANSFORM_HPR) && flags & TRANSFORM_QUAT)
                         // there is no make_pos_quat() method
                         transform = TransformState::make_pos_quat_scale(
                             pos, quat, LVecBase3(1, 1, 1));
-                    else if (has_pos && !has_hpr && !has_quat)
+                    else if (flags & TRANSFORM_POS && !(flags & TRANSFORM_HPR) && !(flags & TRANSFORM_QUAT))
                         transform = TransformState::make_pos(pos);
-                    else if (!has_pos && has_hpr && !has_quat)
+                    else if (!(flags & TRANSFORM_POS) && flags & TRANSFORM_HPR && !(flags & TRANSFORM_QUAT))
                         transform = TransformState::make_hpr(hpr);
-                    else if (!has_pos && !has_hpr && has_quat)
+                    else if (!(flags & TRANSFORM_POS) && !(flags & TRANSFORM_HPR) && flags & TRANSFORM_QUAT)
                         transform = TransformState::make_quat(quat);
 
-                    if (transform != NULL) {
-                        frame->set_transform(
-                            joint->get_name().c_str(), transform, has_pos, has_hpr, has_quat);
-                    }
+                    if (transform != NULL)
+                        frame->set_transform(joint->get_name(), transform, flags);
 
                     bi++;
                     if (end == '\0' || end == '\n')

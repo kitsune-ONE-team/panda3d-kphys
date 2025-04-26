@@ -7,7 +7,7 @@
 
 class EXPORT_CLASS PuppetMasterNode: public PandaNode {
  PUBLISHED:
-    PuppetMasterNode(const char* name);
+    PuppetMasterNode(const std::string name);
     ~PuppetMasterNode();
     void build();
     void start();

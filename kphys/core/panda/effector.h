@@ -18,7 +18,7 @@
 class EXPORT_CLASS EffectorNode: public PandaNode {
 PUBLISHED:
     explicit EffectorNode(
-        const char* name, unsigned int chain_length=1, unsigned int priority=0);
+        const std::string name, unsigned int chain_length=1, unsigned int priority=0);
     unsigned int get_chain_length();
     unsigned int get_priority();
     NodePath get_chain_root();

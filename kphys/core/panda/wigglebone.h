@@ -36,7 +36,7 @@ LQuaternion quat_shortest_arc(const LVecBase3& arc_from, const LVecBase3& arc_to
 
 class EXPORT_CLASS WiggleBoneNode: public BoneNode {
 PUBLISHED:
-    explicit WiggleBoneNode(const char* name, unsigned int bone_id);
+    explicit WiggleBoneNode(const std::string name, unsigned int bone_id);
 
     int get_wigglebone_mode();
     void set_wigglebone_mode(int value);

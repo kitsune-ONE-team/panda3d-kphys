@@ -28,7 +28,7 @@ END_PUBLISH
 
 class EXPORT_CLASS Channel: public TypedReferenceCount, public Namable {
 PUBLISHED:
-    Channel(const char* name);
+    Channel(const std::string name);
     ~Channel();
     double get_factor();
     void set_blending_time(double t);
@@ -41,13 +41,13 @@ PUBLISHED:
     void push_animation(PointerTo<Animation> animation);
     void switch_animation();
     void update(double dt);
-    void include_bone(const char* name);
-    void exclude_bone(const char* name);
+    void include_bone(std::string name);
+    void exclude_bone(std::string name);
     unsigned int get_num_included_bones();
     unsigned int get_num_excluded_bones();
-    bool is_bone_included(const char* name);
-    bool is_bone_excluded(const char* name);
-    bool is_bone_enabled(const char* name);
+    bool is_bone_included(std::string name);
+    bool is_bone_excluded(std::string name);
+    bool is_bone_enabled(std::string name);
 
 private:
     PointerTo<Animation> _animations[NUM_SLOTS];

@@ -19,7 +19,7 @@
 
 class EXPORT_CLASS BoneNode: public PandaNode {
 PUBLISHED:
-    explicit BoneNode(const char* name, unsigned int bone_id);
+    explicit BoneNode(const std::string name, unsigned int bone_id);
     unsigned int get_bone_id();
     void set_hinge_constraint(const LVecBase3& axis, double min_ang=-M_PI, double max_ang=M_PI);
     void set_ball_constraint(double min_ang=-M_PI, double max_ang=M_PI);

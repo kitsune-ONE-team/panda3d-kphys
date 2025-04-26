@@ -3,7 +3,6 @@
 
 #include "nodePath.h"
 #include "typedReferenceCount.h"
-#include "pmap.h"
 #include "pvector.h"
 #include "transformState.h"
 
@@ -27,28 +26,28 @@ PUBLISHED:
     Frame();
     ~Frame();
     unsigned int get_num_transforms();
-    const char* get_bone_name(unsigned int i);
+    std::string get_bone_name(unsigned int i);
     ConstPointerTo<TransformState> get_transform(unsigned int i);
-    ConstPointerTo<TransformState> get_transform(const char* name);
-    unsigned short get_transform_flags(const char* name);
-    double get_transform_factor(const char* name);
+    ConstPointerTo<TransformState> get_transform(std::string name);
+    unsigned short get_transform_flags(std::string name);
+    double get_transform_factor(std::string name);
     PointerTo<Frame> mix(PointerTo<Frame> frame_b, double factor=-1.0);
 
 private:
     unsigned long _iframe;
     pvector<std::string> _bone_names;
-    pmap<std::string, ConstPointerTo<TransformState>> _transforms;
-    pmap<std::string, unsigned short> _transform_flags;
-    pmap<std::string, double> _transform_factors;
+    KDICT<std::string, ConstPointerTo<TransformState>> _transforms;
+    KDICT<std::string, unsigned short> _transform_flags;
+    KDICT<std::string, double> _transform_factors;
 
     static TypeHandle _type_handle;
 
 public:
     void set_transform(
-        const char* name, ConstPointerTo<TransformState> transform,
+        std::string name, ConstPointerTo<TransformState> transform,
         unsigned short flags, double factor=1.0);
     void set_transform(
-        const char* name, ConstPointerTo<TransformState> transform,
+        std::string name, ConstPointerTo<TransformState> transform,
         bool has_pos, bool has_hpr, bool has_quat, double factor=1.0);
 
     static TypeHandle get_class_type() {

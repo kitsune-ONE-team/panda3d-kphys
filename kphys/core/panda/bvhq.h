@@ -11,18 +11,18 @@
 
 class EXPORT_CLASS BVHQJoint: public TypedReferenceCount, public Namable {
 PUBLISHED:
-    BVHQJoint(const char* name);
+    BVHQJoint(const std::string name);
     ~BVHQJoint();
     unsigned long get_num_channels();
-    char* get_channel(unsigned long i);
+    std::string get_channel(unsigned long i);
 
 private:
-    pvector<char*> _channels;
+    pvector<std::string> _channels;
 
     static TypeHandle _type_handle;
 
 public:
-    void add_channel(char* name);
+    void add_channel(std::string name);
 
     static TypeHandle get_class_type() {
         return _type_handle;
@@ -43,7 +43,7 @@ public:
 
 class EXPORT_CLASS BVHQ: public Animation {
 PUBLISHED:
-    BVHQ(const char* name, Filename filename, bool local_space=true, bool debug=false);
+    BVHQ(const std::string name, Filename filename, bool local_space=true, bool debug=false);
     ~BVHQ();
 
 private:

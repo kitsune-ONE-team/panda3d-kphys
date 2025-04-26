@@ -4,7 +4,7 @@
 
 TypeHandle PuppetMasterNode::_type_handle;
 
-PuppetMasterNode::PuppetMasterNode(const char* name): PandaNode(name) {}
+PuppetMasterNode::PuppetMasterNode(const std::string name): PandaNode(name) {}
 
 PuppetMasterNode::~PuppetMasterNode() {}
 
@@ -12,14 +12,16 @@ void PuppetMasterNode::build() {
     NodePath master = NodePath::any_path(this);
 
     NodePathCollection nps = master.find_all_matches("**/+AnimatorNode");
-    for (int i = 0; i < nps.get_num_paths(); i++) {
+    int num_nps = nps.get_num_paths();
+    for (int i = 0; i < num_nps; i++) {
         NodePath np = nps.get_path(i);
         PointerTo<Puppet> puppet = new Puppet(np.get_name(), np.get_name(), np);
         _puppets.push_back(puppet);
     }
 
     nps = master.find_all_matches("**/+MultiAnimatorNode");
-    for (int i = 0; i < nps.get_num_paths(); i++) {
+    num_nps = nps.get_num_paths();
+    for (int i = 0; i < num_nps; i++) {
         NodePath np = nps.get_path(i);
         PointerTo<Puppet> puppet = new Puppet(np.get_name(), np.get_name(), np);
         _puppets.push_back(puppet);

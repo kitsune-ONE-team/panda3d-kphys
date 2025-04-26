@@ -5,7 +5,7 @@
 
 TypeHandle Channel::_type_handle;
 
-Channel::Channel(const char* name): Namable(name) {
+Channel::Channel(const std::string name): Namable(name) {
     for (unsigned short i = 0; i < NUM_SLOTS; i++) {
         _animations[i] = NULL;
         _frame_indices[i] = 0.0;
@@ -23,21 +23,19 @@ Channel::~Channel() {
     _exclude_bones.clear();
 }
 
-void Channel::include_bone(const char* name) {
-    std::string s = std::string(name);
-    if (_exclude_bones.find(s) == _exclude_bones.end()) {
-        _include_bones[s] = true;
+void Channel::include_bone(std::string name) {
+    if (_exclude_bones.find(name) == _exclude_bones.end()) {
+        _include_bones[name] = true;
     } else {
-        _exclude_bones.erase(s);
+        _exclude_bones.erase(name);
     }
 }
 
-void Channel::exclude_bone(const char* name) {
-    std::string s = std::string(name);
-    if (_include_bones.find(s) == _include_bones.end()) {
-        _exclude_bones[s] = true;
+void Channel::exclude_bone(std::string name) {
+    if (_include_bones.find(name) == _include_bones.end()) {
+        _exclude_bones[name] = true;
     } else {
-        _include_bones.erase(s);
+        _include_bones.erase(name);
     }
 }
 
@@ -49,21 +47,19 @@ unsigned int Channel::get_num_excluded_bones() {
     return _exclude_bones.size();
 }
 
-bool Channel::is_bone_included(const char* name) {
-    std::string s = std::string(name);
-    if (_include_bones.find(s) == _include_bones.end())
+bool Channel::is_bone_included(std::string name) {
+    if (_include_bones.find(name) == _include_bones.end())
         return false;
     return true;
 }
 
-bool Channel::is_bone_excluded(const char* name) {
-    std::string s = std::string(name);
-    if (_exclude_bones.find(s) == _exclude_bones.end())
+bool Channel::is_bone_excluded(std::string name) {
+    if (_exclude_bones.find(name) == _exclude_bones.end())
         return false;
     return true;
 }
 
-bool Channel::is_bone_enabled(const char* name) {
+bool Channel::is_bone_enabled(std::string name) {
     if (get_num_included_bones())  // whitelist
         return is_bone_included(name);
     else  // blacklist

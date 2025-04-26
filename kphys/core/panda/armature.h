@@ -3,7 +3,6 @@
 
 #include "nodePath.h"
 #include "pandaNode.h"
-#include "pmap.h"
 #include "texture.h"
 
 #ifdef CPPPARSER  // interrogate
@@ -15,8 +14,8 @@ union LMatrix4Array;
 #endif
 
 #include "kphys/core/panda/ik.h"
-#include "kphys/core/panda/types.h"
 #include "kphys/core/panda/frame.h"
+#include "kphys/core/panda/types.h"
 
 
 BEGIN_PUBLISH
@@ -28,7 +27,7 @@ END_PUBLISH
 
 class EXPORT_CLASS ArmatureNode: public PandaNode {
 PUBLISHED:
-    ArmatureNode(const char* name="armature");
+    ArmatureNode(const std::string name="armature");
     ~ArmatureNode();
     void set_raw_transform(bool is_enabled);
     void cleanup();
@@ -43,7 +42,7 @@ PUBLISHED:
     void update_shader_inputs();
     void update_shader_inputs(NodePath np);
     void update_wiggle_bones(NodePath root_np, double dt);
-    NodePath find_bone(const char* name);
+    NodePath find_bone(std::string name);
     void apply(PointerTo<Frame> frame, bool local_space=true);
 
 private:
@@ -54,7 +53,7 @@ private:
     LMatrix4Array* _bone_init_inv;  // initial world-space inverted (inverse bind) matrices
     LMatrix4Array* _bone_transform;  // current world-space matrices
     float _bone_id_tree[MAX_BONES][MAX_BONES];
-    pmap<std::string, NodePath> _bones;
+    KDICT<std::string, NodePath> _bones;
     PointerTo<Texture> _bone_init_inv_tex;
     PointerTo<Texture> _bone_id_tree_tex;
     PointerTo<Texture> _bone_transform_tex;

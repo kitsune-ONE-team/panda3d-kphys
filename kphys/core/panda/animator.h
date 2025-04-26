@@ -2,32 +2,34 @@
 #define PANDA_ANIMATOR_H
 
 #include "pandaNode.h"
-#include "pmap.h"
 #include "pvector.h"
 #include "nodePath.h"
 
 #include "kphys/core/panda/animation.h"
 #include "kphys/core/panda/channel.h"
+#include "kphys/core/panda/frame.h"
+#include "kphys/core/panda/types.h"
 
 
 class EXPORT_CLASS AnimatorNode: public PandaNode {
 PUBLISHED:
-    AnimatorNode(const char* name);
+    AnimatorNode(const std::string name);
     ~AnimatorNode();
     unsigned int get_num_channels();
-    void add_channel(const char* name);
+    void add_channel(std::string name);
     PointerTo<Channel> get_channel(unsigned int i);
-    PointerTo<Channel> get_channel(const char* name);
-    void put_animation(const char* name, PointerTo<Animation> animation);
-    PointerTo<Animation> get_animation(const char* name);
+    PointerTo<Channel> get_channel(std::string name);
+    void put_animation(std::string name, PointerTo<Animation> animation);
+    PointerTo<Animation> get_animation(std::string name);
+    NodePath find_armature();
     void update(double dt);
     void apply(bool blend=true, bool interpolate=true, bool local_space=true);
 
 private:
-    NodePath _armature;
-    pmap<std::string, PointerTo<Animation>> _animations;
+    KDICT<std::string, PointerTo<Animation>> _animations;
+    KDICT<std::string, NodePath> _armatures;
     pvector<std::string> _channel_names;
-    pmap<std::string, PointerTo<Channel>> _channels;
+    KDICT<std::string, PointerTo<Channel>> _channels;
 
     static TypeHandle _type_handle;
 

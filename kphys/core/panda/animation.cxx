@@ -3,7 +3,7 @@
 
 TypeHandle Animation::_type_handle;
 
-Animation::Animation(const char* name, bool local_space): Namable(name) {
+Animation::Animation(const std::string name, bool local_space): Namable(name) {
     _local_space = local_space;
     _blend_in = true;
     _blend_out = true;

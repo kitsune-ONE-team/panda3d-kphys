@@ -86,20 +86,19 @@ Frame::~Frame() {
 }
 
 void Frame::set_transform(
-        const char* name, ConstPointerTo<TransformState> transform,
+        std::string name, ConstPointerTo<TransformState> transform,
         unsigned short flags, double factor) {
     if (get_transform(name) != NULL)
         return;
 
-    std::string s = std::string(name);
-    _bone_names.push_back(s);
-    _transforms[s] = transform;
-    _transform_flags[s] = flags;
-    _transform_factors[s] = factor;
+    _bone_names.push_back(name);
+    _transforms[name] = transform;
+    _transform_flags[name] = flags;
+    _transform_factors[name] = factor;
 }
 
 void Frame::set_transform(
-        const char* name, ConstPointerTo<TransformState> transform,
+        std::string name, ConstPointerTo<TransformState> transform,
         bool has_pos, bool has_hpr, bool has_quat, double factor) {
     unsigned short flags = 0;
     if (has_pos)
@@ -115,34 +114,31 @@ unsigned int Frame::get_num_transforms() {
     return _transforms.size();
 }
 
-const char* Frame::get_bone_name(unsigned int i) {
+std::string Frame::get_bone_name(unsigned int i) {
     return _bone_names[i].c_str();
 }
 
 ConstPointerTo<TransformState> Frame::get_transform(unsigned int i) {
-    const char* bone_name = get_bone_name(i);
+    std::string bone_name = get_bone_name(i);
     return get_transform(bone_name);
 }
 
-ConstPointerTo<TransformState> Frame::get_transform(const char* name) {
-    std::string s = std::string(name);
-    if (_transforms.find(s) == _transforms.end())
+ConstPointerTo<TransformState> Frame::get_transform(std::string name) {
+    if (_transforms.find(name) == _transforms.end())
         return NULL;
-    return _transforms[s];
+    return _transforms[name];
 }
 
-unsigned short Frame::get_transform_flags(const char* name) {
-    std::string s = std::string(name);
-    if (_transform_flags.find(s) == _transform_flags.end())
+unsigned short Frame::get_transform_flags(std::string name) {
+    if (_transform_flags.find(name) == _transform_flags.end())
         return 0;
-    return _transform_flags[s];
+    return _transform_flags[name];
 }
 
-double Frame::get_transform_factor(const char* name) {
-    std::string s = std::string(name);
-    if (_transform_factors.find(s) == _transform_factors.end())
+double Frame::get_transform_factor(std::string name) {
+    if (_transform_factors.find(name) == _transform_factors.end())
         return 1.0;
-    return _transform_factors[s];
+    return _transform_factors[name];
 }
 
 PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
@@ -161,7 +157,7 @@ PointerTo<Frame> Frame::mix(PointerTo<Frame> frame_b, double factor) {
             bsize = frame_b->get_num_transforms();
 
         for (unsigned int b = 0; b < bsize; b++) {
-            const char* bone_name;
+            std::string bone_name;
             if (s == SLOT_A)
                 bone_name = get_bone_name(b);
             else

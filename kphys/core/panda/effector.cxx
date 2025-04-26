@@ -17,7 +17,7 @@
 TypeHandle EffectorNode::_type_handle;
 
 EffectorNode::EffectorNode(
-        const char* name, unsigned int chain_length, unsigned int priority): PandaNode(name)
+        const std::string name, unsigned int chain_length, unsigned int priority): PandaNode(name)
         , _chain_length(chain_length)
         , _priority(priority)
 #ifdef WITH_FABRIK

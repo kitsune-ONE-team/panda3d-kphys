@@ -14,7 +14,7 @@
 
 TypeHandle BoneNode::_type_handle;
 
-BoneNode::BoneNode(const char* name, unsigned int bone_id): PandaNode(name)
+BoneNode::BoneNode(const std::string name, unsigned int bone_id): PandaNode(name)
         , _bone_id(bone_id)
         , _axis(LVector3::zero())
         , _min_ang(-M_PI)

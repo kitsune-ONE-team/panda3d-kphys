@@ -6,17 +6,18 @@
 #include "typedReferenceCount.h"
 
 #include "kphys/core/panda/animation.h"
+#include "kphys/core/panda/types.h"
 
 
 class EXPORT_CLASS MultiAnimation: public TypedReferenceCount, public Namable {
 PUBLISHED:
-    MultiAnimation(const char* name);
+    MultiAnimation(const std::string name);
     ~MultiAnimation();
-    void put_animation(const char* channel_name, PointerTo<Animation> animation);
-    PointerTo<Animation> get_animation(const char* channel_name);
+    void put_animation(std::string channel_name, PointerTo<Animation> animation);
+    PointerTo<Animation> get_animation(std::string channel_name);
 
 private:
-    pmap<std::string, PointerTo<Animation>> _animations;
+    KDICT<std::string, PointerTo<Animation>> _animations;
 
     static TypeHandle _type_handle;
 

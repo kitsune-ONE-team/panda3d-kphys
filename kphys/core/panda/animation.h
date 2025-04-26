@@ -10,7 +10,7 @@
 
 class EXPORT_CLASS Animation: public TypedReferenceCount, public Namable {
 PUBLISHED:
-    Animation(const char* name, bool local_space=true);
+    Animation(const std::string name, bool local_space=true);
     ~Animation();
     bool is_local_space();
     unsigned long get_num_frames();

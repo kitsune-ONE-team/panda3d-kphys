@@ -13,7 +13,7 @@ TypeHandle WiggleBoneNode::_type_handle;
  * Based on WiggleBone addon for Godot by Simon Schoenenberger:
  * https://github.com/detomon/wigglebone
  */
-WiggleBoneNode::WiggleBoneNode(const char* name, unsigned int bone_id):
+WiggleBoneNode::WiggleBoneNode(const std::string name, unsigned int bone_id):
     BoneNode(name, bone_id) {
     // properties
     _wb_mode = WIGGLEBONE_MODE_ROTATION;

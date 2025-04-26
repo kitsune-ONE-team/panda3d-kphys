@@ -6,7 +6,7 @@
 
 TypeHandle AnimatorNode::_type_handle;
 
-AnimatorNode::AnimatorNode(const char* name): PandaNode(name) {}
+AnimatorNode::AnimatorNode(const std::string name): PandaNode(name) {}
 
 AnimatorNode::~AnimatorNode() {
     _animations.clear();
@@ -21,10 +21,9 @@ unsigned int AnimatorNode::get_num_channels() {
 /**
    Create a new animation channel.
 */
-void AnimatorNode::add_channel(const char* name) {
-    std::string s = std::string(name);
-    _channel_names.push_back(s);
-    _channels[s] = new Channel(name);
+void AnimatorNode::add_channel(std::string name) {
+    _channel_names.push_back(name);
+    _channels[name] = new Channel(name);
 }
 
 /**
@@ -37,29 +36,42 @@ PointerTo<Channel> AnimatorNode::get_channel(unsigned int i) {
 /**
    Get an animation channel.
 */
-PointerTo<Channel> AnimatorNode::get_channel(const char* name) {
-    std::string s = std::string(name);
-    if (_channels.find(s) == _channels.end())
+PointerTo<Channel> AnimatorNode::get_channel(std::string name) {
+    if (_channels.find(name) == _channels.end())
         return NULL;
-    return _channels[s];
+    return _channels[name];
 }
 
 /**
    Put a reusable animation in the storage.
 */
-void AnimatorNode::put_animation(const char* name, PointerTo<Animation> animation) {
-    std::string s = std::string(name);
-    _animations[s] = animation;
+void AnimatorNode::put_animation(std::string name, PointerTo<Animation> animation) {
+    _animations[name] = animation;
 }
 
 /**
    Get a reusable animation from the storage.
 */
-PointerTo<Animation> AnimatorNode::get_animation(const char* name) {
-    std::string s = std::string(name);
-    if (_animations.find(s) == _animations.end())
+PointerTo<Animation> AnimatorNode::get_animation(std::string name) {
+    if (_animations.find(name) == _animations.end())
         return NULL;
-    return _animations[s];
+    return _animations[name];
+}
+
+NodePath AnimatorNode::find_armature() {
+    if (_armatures.find("armature") != _armatures.end())
+        return _armatures["armature"];
+
+    NodePath animator = NodePath::any_path(this);
+    NodePathCollection armatures = animator.find_all_matches("**/+ArmatureNode");
+    for (int i = 0; i < armatures.get_num_paths(); i++) {
+        NodePath np = armatures.get_path(i);
+        _armatures["armature"] = np;
+        return np;
+    }
+
+    _armatures["armature"] = NodePath();
+    return _armatures["armature"];
 }
 
 void AnimatorNode::update(double dt) {
@@ -71,8 +83,15 @@ void AnimatorNode::update(double dt) {
 }
 
 void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
+    NodePath armature = find_armature();
+    if (armature.is_empty())
+        return;
+
     PointerTo<Frame> frames[NUM_SLOTS];
     for (unsigned int s = 0; s < NUM_SLOTS; s++) {
+        // if (!blend && s == SLOT_A)
+        //     continue;
+
         frames[s] = new Frame();
 
         // merge all channels into the singe frame
@@ -81,6 +100,7 @@ void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
             PointerTo<Channel> channel = get_channel(c);
 
             PointerTo<Frame> frame = channel->get_frame(s, interpolate);
+            // frame->ls();
             if (frame == NULL)
                 continue;
 
@@ -94,7 +114,7 @@ void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
             // copy transforms
             unsigned int bsize = frame->get_num_transforms();
             for (unsigned int b = 0; b < bsize; b++) {
-                const char* bone_name = frame->get_bone_name(b);
+                std::string bone_name = frame->get_bone_name(b);
                 if (!channel->is_bone_enabled(bone_name))
                     continue;
 
@@ -111,13 +131,9 @@ void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
         }
     }
 
+    // frames[SLOT_A]->ls();
+    // frames[SLOT_B]->ls();
     PointerTo<Frame> frame = frames[SLOT_A]->mix(frames[SLOT_B]);
-
-    NodePath animator = NodePath::any_path(this);
-    NodePathCollection armatures = animator.find_all_matches("**/+ArmatureNode");
-    for (int i = 0; i < armatures.get_num_paths(); i++) {
-        NodePath np = armatures.get_path(i);
-        ((ArmatureNode*) np.node())->apply(frame, local_space);
-        break;
-    }
+    // frame->ls();
+    ((ArmatureNode*) armature.node())->apply(frame, local_space);
 }

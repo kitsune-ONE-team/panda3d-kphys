@@ -11,7 +11,7 @@
 
 TypeHandle ArmatureNode::_type_handle;
 
-ArmatureNode::ArmatureNode(const char* name): PandaNode(name)
+ArmatureNode::ArmatureNode(const std::string name): PandaNode(name)
         , _ik_engine(-1)
         , _is_raw_transform(false)
 #ifdef WITH_FABRIK
@@ -391,24 +391,22 @@ void ArmatureNode::sync_ik2p_chains() {
     }
 }
 
-
-NodePath ArmatureNode::find_bone(const char* name) {
-    std::string s = std::string(name);
-    if (_bones.find(s) != _bones.end())
-        return _bones[s];
+NodePath ArmatureNode::find_bone(std::string name) {
+    if (_bones.find(name) != _bones.end())
+        return _bones[name];
 
     NodePath armature = NodePath::any_path(this);
     NodePathCollection bones = armature.find_all_matches("**/+BoneNode");
     for (int i = 0; i < bones.get_num_paths(); i++) {
         NodePath np = bones.get_path(i);
-        if (strcmp(np.get_name().c_str(), name) == 0) {
-            _bones[s] = np;
+        if (strcmp(np.get_name().c_str(), name.c_str()) == 0) {
+            _bones[name] = np;
             return np;
         }
     }
 
-    _bones[s] = NodePath();
-    return _bones[s];
+    _bones[name] = NodePath();
+    return _bones[name];
 }
 
 /**
@@ -419,7 +417,7 @@ void ArmatureNode::apply(PointerTo<Frame> frame, bool local_space) {
 
     unsigned int nt = frame->get_num_transforms();
     for (unsigned int i = 0; i < nt; i++) {
-        const char* name  = frame->get_bone_name(i);
+        std::string name = frame->get_bone_name(i);
         NodePath np = find_bone(name);
         if (np.is_empty())
             continue;
