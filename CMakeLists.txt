@@ -42,6 +42,7 @@ endif()
 
 include_directories(${PANDA_INCLUDE_DIR}/panda3d)
 link_directories(${PANDA_LIBRARY_DIR})
+link_directories(${INTERROGATE_LIBRARY_DIR})
 
 if(WIN32)
   if(EXISTS "${PANDA_LIBRARY_DIR}/libp3framework.lib")
@@ -64,7 +65,7 @@ set(PANDA_LIBS
   ${PANDA_PREFIX}p3dtoolconfig
   # EXTRA
   ${PANDA_PREFIX}p3direct
-  ${PANDA_PREFIX}p3interrogatedb
+  interrogatedb
 )
 
 if(WIN32)
