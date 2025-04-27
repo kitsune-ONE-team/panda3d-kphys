@@ -2,7 +2,6 @@
 #define PANDA_CONFIG_H
 #pragma once
 
-#include "pandabase.h"
 #include "notifyCategoryProxy.h"
 
 
