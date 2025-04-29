@@ -65,7 +65,7 @@ set(PANDA_LIBS
   ${PANDA_PREFIX}p3dtoolconfig
   # EXTRA
   ${PANDA_PREFIX}p3direct
-  interrogatedb
+  ${PANDA_PREFIX}interrogatedb
 )
 
 if(WIN32)
