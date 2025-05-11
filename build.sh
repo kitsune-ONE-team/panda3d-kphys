@@ -1,6 +1,4 @@
 #!/bin/sh
-# build module into SDK
-
 SDK=/var/opt/kitsunetsuki-sdk
 PYTHON_VERSION=3.13t
 
@@ -9,7 +7,7 @@ cd build
 cmake -G "Unix Makefiles" \
     -DBULLET_INCLUDE_DIR=${SDK}/dist/bullet/include \
     -DBULLET_LIBRARY_DIR=${SDK}/dist/bullet/lib \
-    -DCMAKE_INSTALL_PREFIX=${SDK}/dist/sdk/lib/python${PYTHON_VERSION}/site-packages \
+    -DCMAKE_INSTALL_PREFIX=../dist/sdk/lib/python${PYTHON_VERSION}/site-packages \
     -DINSTALL_PY=ON \
     -DINTERROGATE_EXECUTABLE=${SDK}/dist/interrogate/bin/interrogate \
     -DINTERROGATE_MODULE_EXECUTABLE=${SDK}/dist/interrogate/bin/interrogate_module \

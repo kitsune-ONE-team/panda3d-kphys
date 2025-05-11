@@ -43,8 +43,9 @@ class TextureMixin(object):
             else:
                 uri = p3d.Filename.from_os_specific(uri)
                 fulluri = p3d.Filename(self.filedir, uri)
+                fulluri.standardize()
                 texture = p3d.TexturePool.load_texture(fulluri, 0, False, p3d.LoaderOptions())
-                texture.filename = texture.fullpath = uri
+                texture.filename = texture.fullpath = fulluri
         else:
             name = source.get('name', '')
             ext = source['mimeType'].split('/')[1]
