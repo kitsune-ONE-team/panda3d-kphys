@@ -45,6 +45,7 @@ class EXPORT_CLASS BVHQ: public Animation {
 PUBLISHED:
     BVHQ(const std::string name, Filename filename, bool local_space=true, bool debug=false);
     ~BVHQ();
+    bool is_valid();
 
 private:
     std::istream* _istream;

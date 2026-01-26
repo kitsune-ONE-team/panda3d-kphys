@@ -52,6 +52,9 @@ BVHQ::BVHQ(const std::string name, Filename filename, bool local_space, bool deb
 
     VirtualFileSystem* vfs = VirtualFileSystem::get_global_ptr();
     _istream = vfs->open_read_file(filename, true);
+    if (_istream == NULL) {
+        return;
+    }
 
     _frame_time = 0;
 
@@ -328,4 +331,8 @@ char BVHQ::_readword(char* word, unsigned long size) {
         word[i - 1] = '\0';
         return c;
     }
+}
+
+bool BVHQ::is_valid() {
+    return _hierarchy.size() > 0;
 }

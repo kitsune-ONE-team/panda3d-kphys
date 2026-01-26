@@ -27,6 +27,7 @@ class TextureMixin(object):
         source = gltf_data['images'][gltf_tex['source']]
         if 'uri' in source:
             uri = source['uri']
+            name = source.get('name', '')
             if uri.startswith('data:'):
                 info, b64data = uri.split(',')
 
@@ -35,7 +36,6 @@ class TextureMixin(object):
                         f'Unknown data URI: {info}'
                     )
 
-                name = source.get('name', '')
                 ext = info.replace('data:image/', '').replace(';base64', '')
                 data = base64.b64decode(b64data)
 
@@ -46,6 +46,8 @@ class TextureMixin(object):
                 fulluri.standardize()
                 texture = p3d.TexturePool.load_texture(fulluri, 0, False, p3d.LoaderOptions())
                 texture.filename = texture.fullpath = fulluri
+                if name:
+                    texture.name = name
         else:
             name = source.get('name', '')
             ext = source['mimeType'].split('/')[1]

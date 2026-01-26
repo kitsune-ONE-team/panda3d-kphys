@@ -98,6 +98,10 @@ void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
     if (armature.is_empty())
         return;
 
+    apply(armature, blend, interpolate, local_space);
+}
+
+void AnimatorNode::apply(NodePath armature, bool blend, bool interpolate, bool local_space) {
     for (unsigned int s = 0; s < NUM_SLOTS; s++) {
         _fframes[s]->reset();
 

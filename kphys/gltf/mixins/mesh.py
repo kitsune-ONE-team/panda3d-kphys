@@ -66,7 +66,7 @@ class MeshMixin(object):
                 attrib_parts = acc['_attrib'].lower().split('_')
                 attrib_name = spec.ATTRIB_NAME_MAP.get(attrib_parts[0], attrib_parts[0])
                 if attrib_name == 'texcoord' and len(attrib_parts) > 1:
-                    internal_name = p3d.InternalName.make(attrib_name+'.', int(attrib_parts[1]))
+                    internal_name = p3d.InternalName.make(f'{attrib_name}.', int(attrib_parts[1]))
                 else:
                     internal_name = p3d.InternalName.make(attrib_name)
                 num_components = spec.COMPONENT_NUM_MAP[acc['type']]
@@ -278,7 +278,7 @@ class MeshMixin(object):
             handle.copy_data_from(buff[start:end])
             handle = None
         else:
-            index_acc = gltf_data['accessors'][gltf_primitive['attributes']["POSITION"]]
+            index_acc = gltf_data['accessors'][gltf_primitive['attributes']['POSITION']]
             start = index_acc.get('byteOffset', 0)
             prim.setNonindexedVertices(start, index_acc['count'])
 
