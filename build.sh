@@ -1,10 +1,11 @@
 #!/bin/sh
 SDK=/var/opt/kitsunetsuki-sdk
-PYTHON_VERSION=3.13t
+PYTHON_VERSION=3.14t
 
 mkdir -p build
 cd build
 cmake -G "Unix Makefiles" \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DBULLET_INCLUDE_DIR=${SDK}/dist/bullet/include \
     -DBULLET_LIBRARY_DIR=${SDK}/dist/bullet/lib \
     -DCMAKE_INSTALL_PREFIX=../dist/sdk/lib/python${PYTHON_VERSION}/site-packages \

@@ -9,8 +9,7 @@
             var canvas = document.getElementById('target-canvas');
             var source = `
 [Animation|
-  Animation(const char* name, bool local_space=true)|
-  bool is_local_space()|
+  Animation(const char* name)|
   unsigned long get_num_frames()|
   PointerTo<Frame> get_frame(unsigned long i)|
   double get_frame_time()|
@@ -23,7 +22,7 @@
   void set_loop(bool loop)|
   void set_manual(bool manual)
 ] <:- [BVHQ|
-  BVHQ(const char* name, Filename filename, bool local_space=true)
+  BVHQ(const char* name, Filename filename)
 ]
 
 [Animation] -->* [Frame|

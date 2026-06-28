@@ -8,6 +8,7 @@ set(CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/ccdik.cxx
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/channel.cxx
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/config.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/panda/controller_base.cxx
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/controller.cxx
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/converters.cxx
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/effector.cxx
@@ -35,6 +36,7 @@ set(CORE_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/ccdik.h
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/channel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/config.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/panda/controller_base.h
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/controller.h
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/converters.h
     ${CMAKE_CURRENT_SOURCE_DIR}/panda/effector.h

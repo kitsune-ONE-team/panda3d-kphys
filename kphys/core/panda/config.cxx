@@ -8,6 +8,7 @@
 #include "kphys/core/panda/ccdik.h"
 #include "kphys/core/panda/channel.h"
 #include "kphys/core/panda/config.h"
+#include "kphys/core/panda/base_controller.h"
 #include "kphys/core/panda/controller.h"
 #include "kphys/core/panda/converters.h"
 #include "kphys/core/panda/effector.h"
@@ -49,6 +50,7 @@ void init_libcore() {
     Puppet::init_type();
     PuppetMasterNode::init_type();
 
+    BaseControllerNode::init_type();
     ControllerNode::init_type();
     Hit::init_type();
     HitboxNode::init_type();

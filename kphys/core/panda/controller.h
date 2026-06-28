@@ -1,12 +1,11 @@
 #ifndef PANDA_CONTROLLER_H
 #define PANDA_CONTROLLER_H
 
-#include "bulletCharacterControllerNode.h"
-
+#include "kphys/core/panda/controller_base.h"
 #include "kphys/core/bullet/controller.h"
 
 
-class EXPORT_CLASS ControllerNode: public BulletCharacterControllerNode {
+class EXPORT_CLASS ControllerNode: public BaseControllerNode {
 PUBLISHED:
     explicit ControllerNode(
         BulletShape *shape, PN_stdfloat step_height,
@@ -29,10 +28,10 @@ public:
         return _type_handle;
     }
     static void init_type() {
-        BulletCharacterControllerNode::init_type();
+        BaseControllerNode::init_type();
         register_type(
             _type_handle, "ControllerNode",
-            BulletCharacterControllerNode::get_class_type());
+            BaseControllerNode::get_class_type());
     }
     virtual TypeHandle get_type() const {
         return get_class_type();
