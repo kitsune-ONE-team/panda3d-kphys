@@ -11,6 +11,7 @@ PUBLISHED:
     MultiAnimatorNode(const std::string name);
     ~MultiAnimatorNode();
     void put_multi_animation(std::string name, PointerTo<MultiAnimation> multi_animation);
+    PointerTo<MultiAnimation> get_multi_animation();
     PointerTo<MultiAnimation> get_multi_animation(std::string name);
     void switch_multi_animation(std::string name);
 

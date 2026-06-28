@@ -23,8 +23,7 @@ PUBLISHED:
     PointerTo<Animation> get_animation(std::string name);
     NodePath find_armature();
     void update(double dt);
-    void apply(NodePath armature, bool blend=true, bool interpolate=true, bool local_space=true);
-    void apply(bool blend=true, bool interpolate=true, bool local_space=true);
+    void apply(bool blend=true, bool interpolate=true);
 
 private:
     PointerTo<Frame> _mframe;  // final mixed frame

@@ -27,6 +27,10 @@ void MultiAnimatorNode::put_multi_animation(std::string name, PointerTo<MultiAni
     }
 }
 
+PointerTo<MultiAnimation> MultiAnimatorNode::get_multi_animation() {
+    return _multi_animation;
+}
+
 /**
    Get a reusable animation from the storage.
 */

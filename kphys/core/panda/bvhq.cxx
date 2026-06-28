@@ -45,8 +45,7 @@ void BVHQJoint::add_channel(std::string name) {
 }
 
 
-BVHQ::BVHQ(const std::string name, Filename filename, bool local_space, bool debug):
-        Animation(name, local_space) {
+BVHQ::BVHQ(const std::string name, Filename filename, bool debug): Animation(name) {
     if (debug)
         printf("FILE OPEN %s\n", name.c_str());
 

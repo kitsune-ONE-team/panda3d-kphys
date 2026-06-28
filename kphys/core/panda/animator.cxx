@@ -93,15 +93,11 @@ void AnimatorNode::update(double dt) {
     }
 }
 
-void AnimatorNode::apply(bool blend, bool interpolate, bool local_space) {
+void AnimatorNode::apply(bool blend, bool interpolate) {
     NodePath armature = find_armature();
     if (armature.is_empty())
         return;
 
-    apply(armature, blend, interpolate, local_space);
-}
-
-void AnimatorNode::apply(NodePath armature, bool blend, bool interpolate, bool local_space) {
     for (unsigned int s = 0; s < NUM_SLOTS; s++) {
         _fframes[s]->reset();
 
@@ -139,8 +135,8 @@ void AnimatorNode::apply(NodePath armature, bool blend, bool interpolate, bool l
     if (blend) {
         _mframe->reset();
         _fframes[SLOT_A]->mix_into(*_mframe.p(), _fframes[SLOT_B]);
-        ((ArmatureNode*) armature.node())->apply(_mframe, local_space);
+        ((ArmatureNode*) armature.node())->apply(_mframe);
     } else {
-        ((ArmatureNode*) armature.node())->apply(_fframes[SLOT_B], local_space);
+        ((ArmatureNode*) armature.node())->apply(_fframes[SLOT_B]);
     }
 }

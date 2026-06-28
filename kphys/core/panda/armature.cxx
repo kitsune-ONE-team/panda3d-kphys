@@ -412,7 +412,7 @@ NodePath ArmatureNode::find_bone(std::string name) {
 /**
  * Set animation frame. Modifies bone transforms.
  */
-void ArmatureNode::apply(PointerTo<Frame> frame, bool local_space) {
+void ArmatureNode::apply(PointerTo<Frame> frame) {
     NodePath armature = NodePath::any_path(this);
 
     unsigned int nt = frame->get_num_transforms();
@@ -428,22 +428,13 @@ void ArmatureNode::apply(PointerTo<Frame> frame, bool local_space) {
 
         unsigned short flags = frame->get_transform_flags(name);
         if (flags & TRANSFORM_POS) {
-            if (local_space)
-                np.set_pos(transform->get_pos());
-            else
-                np.set_pos(armature, transform->get_pos());
+            np.set_pos(transform->get_pos());
         }
         if (flags & TRANSFORM_HPR) {
-            if (local_space)
-                np.set_hpr(transform->get_hpr());
-            else
-                np.set_hpr(armature, transform->get_hpr());
+            np.set_hpr(transform->get_hpr());
         }
         if (flags & TRANSFORM_QUAT) {
-            if (local_space)
-                np.set_quat(transform->get_quat());
-            else
-                np.set_quat(armature, transform->get_quat());
+            np.set_quat(transform->get_quat());
         }
     }
 }

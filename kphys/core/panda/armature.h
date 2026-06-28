@@ -43,7 +43,7 @@ PUBLISHED:
     void update_shader_inputs(NodePath np);
     void update_wiggle_bones(NodePath root_np, double dt);
     NodePath find_bone(std::string name);
-    void apply(PointerTo<Frame> frame, bool local_space=true);
+    void apply(PointerTo<Frame> frame);
 
 private:
     unsigned int _ik_engine;
