@@ -20,6 +20,8 @@ class GltfSettings:
     textures: str = 'ref'
     flatten_nodes: bool = False
     spring_bones: str = 'wigglebone'
+    use_hitboxes: bool = False
+    texture_scaling: int = 1
 
 
 class Converter(MaterialMixin, MeshMixin, NodeMixin, SpringMixin, TextureMixin):

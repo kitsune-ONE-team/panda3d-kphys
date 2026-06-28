@@ -1,7 +1,7 @@
 """Based on gltf.converter."""
 from typing import Optional
 
-from ...core import ArmatureNode, BoneNode, WiggleBoneNode
+from ...core import ArmatureNode, BoneNode, HitboxNode, WiggleBoneNode
 
 from panda3d import bullet, core as p3d
 
@@ -288,6 +288,8 @@ class NodeMixin(object):
             if not static:
                 mass = 1.0 if gltf_rigidbody is None else gltf_rigidbody.get('mass', 1.0)
                 phynode.set_mass(mass)
+            if intangible and self.settings.use_hitboxes:
+                phynode = HitboxNode(node_name, phynode)
             return phynode
         else:
             print("Could not create collision shape for object ({})".format(node_name))

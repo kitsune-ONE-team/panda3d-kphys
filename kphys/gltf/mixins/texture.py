@@ -4,11 +4,36 @@ from panda3d import core as p3d
 from .. import spec
 
 
+class TexturePool(object):
+    textures: dict[str, p3d.Texture] = {}
+
+    @classmethod
+    def add_texture(cls, texture: p3d.Texture):
+        cls.textures[texture.get_name()] = texture
+
+    @classmethod
+    def get_texture(cls, name: str | p3d.Filename) -> p3d.Texture | None:
+        if isinstance(name, p3d.Filename):
+            name = name.to_os_specific()
+        return cls.textures.get(name)
+
+
 class TextureMixin(object):
     def load_texture(self, texid: int, gltf_tex: dict, gltf_data: dict):
         if 'source' not in gltf_tex:
             print("Texture '{}' has no source, skipping".format(texid))
             return
+
+        def rescale_image(img: p3d.PNMImage) -> p3d.PNMImage:
+            if self.settings.texture_scaling == 1:
+                return img
+
+            scaled_img = p3d.PNMImage(
+                int(img.get_x_size() / self.settings.texture_scaling),
+                int(img.get_y_size() / self.settings.texture_scaling),
+                img.get_num_channels())
+            scaled_img.unfiltered_stretch_from(img)
+            return scaled_img
 
         def load_embedded_image(name, ext, data):
             if not name:
@@ -20,7 +45,7 @@ class TextureMixin(object):
             img.read(p3d.StringStream(data), type=img_type)
 
             texture = p3d.Texture(name)
-            texture.load(img)
+            texture.load(rescale_image(img))
 
             return texture
 
@@ -44,10 +69,30 @@ class TextureMixin(object):
                 uri = p3d.Filename.from_os_specific(uri)
                 fulluri = p3d.Filename(self.filedir, uri)
                 fulluri.standardize()
-                texture = p3d.TexturePool.load_texture(fulluri, 0, False, p3d.LoaderOptions())
-                texture.filename = texture.fullpath = fulluri
-                if name:
-                    texture.name = name
+
+                # texture = p3d.TexturePool.get_texture(fulluri)
+                texture = TexturePool.get_texture(fulluri)
+                if not texture:
+                    if self.settings.texture_scaling == 1:
+                        texture = p3d.TexturePool.load_texture(fulluri, 0, False, p3d.LoaderOptions())
+                        texture.name = fulluri.to_os_specific()
+
+                    else:
+                        img_type_registry = p3d.PNMFileTypeRegistry.get_global_ptr()
+                        img_type = img_type_registry.get_type_from_extension(fulluri.get_basename())
+
+                        vfs = p3d.VirtualFileSystem.get_global_ptr()
+                        img = p3d.PNMImage(fulluri)
+                        img.read(vfs.open_read_file(fulluri, False), type=img_type)
+
+                        texture = p3d.Texture(fulluri.to_os_specific())
+                        texture.load(rescale_image(img))
+
+                    texture.filename = texture.fullpath = fulluri
+
+                    # p3d.TexturePool.add_texture(texture)
+                    TexturePool.add_texture(texture)
+
         else:
             name = source.get('name', '')
             ext = source['mimeType'].split('/')[1]
