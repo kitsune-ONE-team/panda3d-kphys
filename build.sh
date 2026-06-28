@@ -6,8 +6,8 @@ mkdir -p build
 cd build
 cmake -G "Unix Makefiles" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    -DBULLET_INCLUDE_DIR=${SDK}/dist/ksdk/include \
-    -DBULLET_LIBRARY_DIR=${SDK}/dist/ksdk//lib \
+    -DBULLET_INCLUDE_DIR=${SDK}/dist/ksdk/include/bullet \
+    -DBULLET_LIBRARY_DIR=${SDK}/dist/ksdk/lib \
     -DCMAKE_INSTALL_PREFIX=../dist/sdk/lib/python${PYTHON_VERSION}/site-packages \
     -DINSTALL_PY=ON \
     -DINTERROGATE_EXECUTABLE=${SDK}/dist/interrogate/bin/interrogate \

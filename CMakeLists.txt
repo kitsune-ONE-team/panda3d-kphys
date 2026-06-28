@@ -31,7 +31,7 @@ if(EXISTS "${BULLET_LIBRARY_DIR}")
 else()
     find_package(Bullet REQUIRED)
 endif()
-include_directories(${BULLET_INCLUDE_DIR}/bullet)
+include_directories(${BULLET_INCLUDE_DIR})
 
 if(${WITH_FABRIK} MATCHES "ON")
     set(IK_PATH thirdparty/ik)
