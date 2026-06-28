@@ -336,31 +336,3 @@ set_use_ghost_sweep_test(bool value) {
 
   return _character->setUseGhostSweepTest(value);
 }
-
-/**
- *
- */
-INLINE BaseControllerNode::
-~BaseControllerNode() {
-
-  delete _character;
-  delete _ghost;
-}
-
-/**
- *
- */
-INLINE btPairCachingGhostObject *BaseControllerNode::
-get_ghost() const {
-
-  return _ghost;
-}
-
-/**
- *
- */
-INLINE btCharacterControllerInterface *BaseControllerNode::
-get_character() const {
-
-  return _character;
-}

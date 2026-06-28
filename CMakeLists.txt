@@ -12,7 +12,7 @@ if(WIN32)
     add_definitions("/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 /GR-")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -fno-rtti")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11 -fno-rtti")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++17 -fno-rtti")
 endif()
 
 if(EXISTS "${PYTHON_LIBRARY}")

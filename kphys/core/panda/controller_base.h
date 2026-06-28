@@ -11,8 +11,8 @@
  * @date 2010-11-21
  */
 
-#ifndef BULLETCHARACTERCONTROLLERNODE_H
-#define BULLETCHARACTERCONTROLLERNODE_H
+#ifndef PANDA_CONTROLLER_BASE_H
+#define PANDA_CONTROLLER_BASE_H
 
 #include "pandabase.h"
 
@@ -108,6 +108,32 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "bulletCharacterControllerNode.I"
+/**
+ *
+ */
+INLINE BaseControllerNode::
+~BaseControllerNode() {
 
-#endif // BULLETCHARACTERCONTROLLERNODE_H
+  delete _character;
+  delete _ghost;
+}
+
+/**
+ *
+ */
+INLINE btPairCachingGhostObject *BaseControllerNode::
+get_ghost() const {
+
+  return _ghost;
+}
+
+/**
+ *
+ */
+INLINE btCharacterControllerInterface *BaseControllerNode::
+get_character() const {
+
+  return _character;
+}
+
+#endif

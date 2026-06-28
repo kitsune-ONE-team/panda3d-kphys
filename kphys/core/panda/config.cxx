@@ -8,7 +8,7 @@
 #include "kphys/core/panda/ccdik.h"
 #include "kphys/core/panda/channel.h"
 #include "kphys/core/panda/config.h"
-#include "kphys/core/panda/base_controller.h"
+#include "kphys/core/panda/controller_base.h"
 #include "kphys/core/panda/controller.h"
 #include "kphys/core/panda/converters.h"
 #include "kphys/core/panda/effector.h"

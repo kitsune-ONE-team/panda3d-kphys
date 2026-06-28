@@ -7,7 +7,7 @@ TypeHandle ControllerNode::_type_handle;
 
 
 ControllerNode::ControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name):
-    BulletCharacterControllerNode(shape, step_height, name) {
+    BaseControllerNode(shape, step_height, name) {
     delete _character;
 
     btConvexShape *convex = (btConvexShape *)(shape->ptr());
