@@ -28,7 +28,7 @@
 /**
  *
  */
-class EXPCL_PANDABULLET BaseControllerNode : public BulletBaseCharacterControllerNode {
+class EXPORT_CLASS BaseControllerNode : public BulletBaseCharacterControllerNode {
 PUBLISHED:
   explicit BaseControllerNode(BulletShape *shape, PN_stdfloat step_height,
                                          const char *name="character");
