@@ -45,9 +45,11 @@ class Converter(MaterialMixin, MeshMixin, NodeMixin, SpringMixin, TextureMixin):
         self.meshes = {}
         self.node_paths = {}
         self.scenes = {}
-        self.skeletons = {}
-        self.joints = {}
-        self.character_joints = {}
+        self.skeletons = set()
+        self.joints = set()
+        self.character_joints_num = {}
+        self.joint_name2nodeid = {}
+        self.joint_nodeid2boneid = {}
         self.springid = 0
         self.spring_bones = {}
 
@@ -104,6 +106,8 @@ class Converter(MaterialMixin, MeshMixin, NodeMixin, SpringMixin, TextureMixin):
 
         for skinid, gltf_skin in enumerate(gltf_data.get('skins', [])):
             self.load_skin(skinid, gltf_skin, gltf_data)
+        for boneid, (joint_name, nodeid) in enumerate(sorted(self.joint_name2nodeid.items())):
+            self.joint_nodeid2boneid[nodeid] = boneid
 
         for sceneid, gltf_scene in enumerate(gltf_data.get('scenes', [])):
             for nodeid in gltf_scene.get('nodes', []):
@@ -193,6 +197,10 @@ class Converter(MaterialMixin, MeshMixin, NodeMixin, SpringMixin, TextureMixin):
             return memoryview(buff)[start:end]
 
     def load_skin(self, skinid, gltf_skin, gltf_data):
+        if 'jointNames' in gltf_skin.get('extras', {}):
+            for joint_name, nodeid in zip(gltf_skin['extras']['jointNames'], gltf_skin['joints']):
+                self.joint_name2nodeid[joint_name] = nodeid
+
         # Find a common root node.
 
         # First gather the parents of each node.
@@ -237,9 +245,9 @@ class Converter(MaterialMixin, MeshMixin, NodeMixin, SpringMixin, TextureMixin):
                     gltf_scene['nodes'].remove(nodeid)
                     gltf_scene['nodes'].append(root_nodeid)
 
-        self.skeletons[root_nodeid] = skinid
+        self.skeletons.add(root_nodeid)
         for jointid in gltf_skin['joints']:
-            self.joints[jointid] = None
+            self.joints.add(jointid)
 
     def load_camera(self, camid, gltf_camera):
         camname = gltf_camera.get('name', 'cam'+str(camid))

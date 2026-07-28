@@ -14,10 +14,12 @@ class NodeMixin(object):
         if nodeid in self.joints:
             if charid is not None:
                 # we are tracking some skeleton, keep tracking it's bone index
-                if charid not in self.character_joints:
-                    self.character_joints[charid] = 0
-                self.joints[nodeid] = self.character_joints[charid]
-                self.character_joints[charid] += 1
+                if charid not in self.character_joints_num:
+                    self.character_joints_num[charid] = 0
+                if nodeid not in self.joint_nodeid2boneid:
+                    self.joint_nodeid2boneid[nodeid] = self.character_joints_num[charid]
+                self.joints.add(nodeid)
+                self.character_joints_num[charid] += 1
 
         elif nodeid in self.skeletons:
             # start tracking current skeleton and remember node ID
@@ -39,9 +41,9 @@ class NodeMixin(object):
         """Create character joint."""
         node_name = gltf_node.get('name', 'node'+str(nodeid))
         if is_spring:
-            return WiggleBoneNode(node_name, self.joints[nodeid])
+            return WiggleBoneNode(node_name, self.joint_nodeid2boneid[nodeid])
         else:
-            return BoneNode(node_name, self.joints[nodeid])
+            return BoneNode(node_name, self.joint_nodeid2boneid[nodeid])
 
     def add_node(
             self, parent_np: p3d.NodePath, gltf_scene: dict,

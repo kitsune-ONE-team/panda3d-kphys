@@ -170,26 +170,20 @@ class MeshMixin(object):
                 joints = gltf_skin['joints']
 
         # reindex joints
-        if joints:
+        if joints and self.joint_nodeid2boneid:
             indices_data = p3d.GeomVertexRewriter(
                 vdata, p3d.InternalName.get_transform_index())
-            weights_data = p3d.GeomVertexRewriter(
-                vdata, p3d.InternalName.get_transform_weight())
 
-            while not (indices_data.is_at_end() and weights_data.is_at_end()):
+            while not indices_data.is_at_end():
                 indices_old = indices_data.get_data4f()
-                weights_old = weights_data.get_data4f()
-
                 indices_new = [0] * 4
-                weights_new = list(weights_old)
 
                 for i in range(4):
                     jointid = int(indices_old[i])
                     nodeid = joints[jointid]
-                    indices_new[i] = self.joints[nodeid]
+                    indices_new[i] = self.joint_nodeid2boneid[nodeid]
 
                 indices_data.set_data4f(*indices_new)
-                weights_data.set_data4f(*weights_new)
 
         if normalize_weights:
             # The linear sum of all the joint weights must be as close as possible to 1, if the weights are
